@@ -168,8 +168,8 @@ int main(int argc, char **argv)
     manager->Connect(bridge.GetName(), "required-ros",
                      testComponent.GetName(), "provided-cisst");
 
-    manager->Connect(testComponent.GetName(), "required-ros",
-                     bridge.GetName(), "provided-cisst");
+    manager->Connect(testComponent.GetName(), "required-cisst",
+                     bridge.GetName(), "provided-ros");
 
     manager->CreateAllAndWait(2.0 * cmn_s);
     manager->StartAllAndWait(2.0 * cmn_s);
