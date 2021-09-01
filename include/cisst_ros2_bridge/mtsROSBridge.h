@@ -333,6 +333,7 @@ public:
                                const size_t & tableSize):
         StateTable(tableSize, rosTopicName)
     {
+        StateTable.AddData(CISSTData, rosTopicName);
         mSubscriber =
             node->create_subscription<_rosType>(rosTopicName,
                                                 1, std::bind(&ThisType::Callback,
