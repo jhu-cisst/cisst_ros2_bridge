@@ -22,9 +22,10 @@ http://www.cisst.org/cisst/license.txt.
 
   Then in different terminals:
 
-  [1] rostopic echo /sawROSExample/sum_of_elements_1
+  [1] ros2 topic echo /sawROSExample/sum_of_elements_1
 
-  [2] rostopic pub /sawROSExample/set_value_1 cisst_msgs/vctDoubleVec "data: [0, 1, 2, 4]" -1
+  [2] ros2 topic pub /sawROSExample/set_value_1 cisst_msgs/msg/DoubleVec "data: [0, 1, 2, 4]" -1
+
   >> result in sum_of_elements_1 should be 7
 
 
@@ -34,7 +35,7 @@ http://www.cisst.org/cisst/license.txt.
 #include <cisstMultiTask/mtsInterfaceProvided.h>
 #include <cisstMultiTask/mtsInterfaceRequired.h>
 
-#include "cisst_ros_bridge/mtsROSBridge.h"
+#include "cisst_ros2_bridge/mtsROSBridge.h"
 
 class TestComponent: public mtsTaskPeriodic
 {
@@ -58,12 +59,12 @@ public:
         interfaceProvided->AddCommandWrite(&TestComponent::SetValue2, this,
                                            "SetValue2", Value2);
 
-        mtsInterfaceRequired * InterfacesRequired = AddInterfaceRequired("required");
-        InterfacesRequired->AddFunction("SumOfElements1", SumOfElements1);
-        InterfacesRequired->AddFunction("ValueChanged2", ValueChanged2);
-        InterfacesRequired->AddEventHandlerWrite(&TestComponent::SetValue1, this, "EventValue1");
-        InterfacesRequired->AddEventHandlerVoid(&TestComponent::Reset, this, "EventReset");
-        InterfacesRequired->AddFunction("GetValue3", GetValue3);
+        mtsInterfaceRequired * interfacesRequired = AddInterfaceRequired("required");
+        interfacesRequired->AddFunction("SumOfElements1", SumOfElements1);
+        interfacesRequired->AddFunction("ValueChanged2", ValueChanged2);
+        interfacesRequired->AddEventHandlerWrite(&TestComponent::SetValue1, this, "EventValue1");
+        interfacesRequired->AddEventHandlerVoid(&TestComponent::Reset, this, "EventReset");
+        interfacesRequired->AddFunction("GetValue3", GetValue3);
     }
 
     void Configure(const std::string &) {
@@ -116,52 +117,51 @@ protected:
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "cisst_ros_bridge_example", ros::init_options::AnonymousName);
-    ros::NodeHandle rosNodeHandle;
+    rclcpp::init(argc, argv);
+    auto rosNode = std::make_shared<rclcpp::Node>("cisst_ros2_bridge_example");
 
     mtsComponentManager * manager = mtsManagerLocal::GetInstance();
 
     TestComponent testComponent;
     manager->AddComponent(&testComponent);
 
-    mtsROSBridge bridge("publisher", 5.0 * cmn_ms, &rosNodeHandle);
-    bridge.PerformsSpin(true);
+    mtsROSBridge bridge("publisher", 5.0 * cmn_ms, rosNode);
 
-    bridge.AddPublisherFromCommandRead<vctDoubleVec, cisst_msgs::vctDoubleVec>("required",
-                                                                               "GetValue1",
-                                                                               "sawROSExample/get_value_1");
+    bridge.AddPublisherFromCommandRead<vctDoubleVec, cisst_msgs::msg::DoubleVec>("required",
+                                                                                 "GetValue1",
+                                                                                 "sawROSExample/get_value_1");
 
-    bridge.AddPublisherFromCommandRead<vctDoubleVec, cisst_msgs::vctDoubleVec>("required",
-                                                                               "GetValue2",
-                                                                               "sawROSExample/get_value_2");
+    bridge.AddPublisherFromCommandRead<vctDoubleVec, cisst_msgs::msg::DoubleVec>("required",
+                                                                                 "GetValue2",
+                                                                                 "sawROSExample/get_value_2");
 
-    bridge.AddSubscriberToCommandWrite<vctDoubleVec, cisst_msgs::vctDoubleVec>("required",
-                                                                               "SetValue1",
-                                                                               "sawROSExample/set_value_1");
+    bridge.AddSubscriberToCommandWrite<vctDoubleVec, cisst_msgs::msg::DoubleVec>("required",
+                                                                                 "SetValue1",
+                                                                                 "sawROSExample/set_value_1");
 
-    bridge.AddSubscriberToCommandWrite<vctDoubleVec, cisst_msgs::vctDoubleVec>("required",
-                                                                               "SetValue2",
-                                                                               "sawROSExample/set_value_2");
+    bridge.AddSubscriberToCommandWrite<vctDoubleVec, cisst_msgs::msg::DoubleVec>("required",
+                                                                                 "SetValue2",
+                                                                                 "sawROSExample/set_value_2");
 
-    bridge.AddPublisherFromCommandWrite<double, std_msgs::Float32>("provided",
-                                                                   "SumOfElements1",
-                                                                   "sawROSExample/sum_of_elements_1");
+    bridge.AddPublisherFromCommandWrite<double, std_msgs::msg::Float32>("provided",
+                                                                        "SumOfElements1",
+                                                                        "sawROSExample/sum_of_elements_1");
 
     bridge.AddPublisherFromCommandVoid("provided",
                                        "ValueChanged2",
                                        "sawROSExample/value_changed_2");
 
-    bridge.AddSubscriberToEventWrite<vctDoubleVec, cisst_msgs::vctDoubleVec>("provided",
-                                                                             "EventValue1",
-                                                                             "sawROSExample/set_value_1_event");
+    bridge.AddSubscriberToEventWrite<vctDoubleVec, cisst_msgs::msg::DoubleVec>("provided",
+                                                                               "EventValue1",
+                                                                               "sawROSExample/set_value_1_event");
 
     bridge.AddSubscriberToEventVoid("provided",
                                     "EventReset",
                                     "sawROSExample/reset_event");
 
-    bridge.AddSubscriberToCommandRead<vctDoubleVec, cisst_msgs::vctDoubleVec>("provided",
-                                                                              "GetValue3",
-                                                                              "sawROSExample/set_value_3");
+    bridge.AddSubscriberToCommandRead<vctDoubleVec, cisst_msgs::msg::DoubleVec>("provided",
+                                                                                "GetValue3",
+                                                                                "sawROSExample/set_value_3");
 
     manager->AddComponent(&bridge);
 
@@ -176,7 +176,7 @@ int main(int argc, char **argv)
 
     // ros::spin() callback for subscribers
     std::cout << "Hit Ctrl-c to quit" << std::endl;
-    ros::spin();
+    rclcpp::spin(rosNode);
 
     manager->KillAllAndWait(2.0 * cmn_s);
     manager->Cleanup();

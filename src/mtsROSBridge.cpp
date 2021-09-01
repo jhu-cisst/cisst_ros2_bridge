@@ -28,26 +28,27 @@ mtsROSBridge::mtsROSBridge(const std::string & componentName,
                            const double periodInSeconds,
                            const bool spin,
                            const bool sig,
-                           ros::NodeHandle * nodeHandle):
+                           std::shared_ptr<rclcpp::Node> node):
     mtsTaskPeriodic(componentName, periodInSeconds),
     mSpin(spin),
     mSignal(sig)
 {
     typedef char * char_pointer;
     char_pointer * argv = new char_pointer[1];
-    argv[0]= new char[strlen("mtsROSBridge") + 1];
-    strcpy(argv[0], "mtsROSBridge");
+    argv[0]= new char[strlen(componentName.c_str()) + 1];
+    strcpy(argv[0], componentName.c_str());
     int argc = 1;
 
-    if (nodeHandle != nullptr) {
-        mNodeHandlePointer = nodeHandle;
+    if (node != nullptr) {
+        mNodePointer = node;
     } else {
         if (mSignal) {
-            ros::init(argc, argv, componentName);
+            rclcpp::init(argc, argv);
         } else {
-            ros::init(argc, argv, componentName, ros::init_options::NoSigintHandler);
+            rclcpp::init(argc, argv);
+            rclcpp::uninstall_signal_handlers();
         }
-        mNodeHandlePointer = new ros::NodeHandle();
+        mNodePointer = std::make_shared<rclcpp::Node>(componentName);
     }
 }
 
@@ -58,26 +59,27 @@ mtsROSBridge::mtsROSBridge(const mtsTaskPeriodicConstructorArg &arg):
 {
     typedef char * char_pointer;
     char_pointer * argv = new char_pointer[1];
-    argv[0]= new char[strlen("mtsROSBridge") + 1];
-    strcpy(argv[0], "mtsROSBridge");
+    argv[0]= new char[strlen(arg.Name.c_str()) + 1];
+    strcpy(argv[0], arg.Name.c_str());
     int argc = 1;
 
     if (mSignal) {
-        ros::init(argc, argv, Name);
+        rclcpp::init(argc, argv);
     } else {
-        ros::init(argc, argv, Name, ros::init_options::NoSigintHandler);
+        rclcpp::init(argc, argv);
+        rclcpp::uninstall_signal_handlers();
     }
-    mNodeHandlePointer = new ros::NodeHandle();
+    mNodePointer = std::make_shared<rclcpp::Node>(arg.Name);
 }
 
 mtsROSBridge::mtsROSBridge(const std::string & componentName,
                            const double periodInSeconds,
-                           ros::NodeHandle * nodeHandle):
+                           std::shared_ptr<rclcpp::Node> node):
     mtsTaskPeriodic(componentName, periodInSeconds),
     mSpin(false),
     mSignal(false)
 {
-    mNodeHandlePointer = nodeHandle;
+    mNodePointer = node;
 }
 
 void mtsROSBridge::Configure(const std::string & CMN_UNUSED(filename))
@@ -115,7 +117,7 @@ void mtsROSBridge::AddIntervalStatisticsPublisher(const std::string & rosNamespa
 {
     // create an publisher to publish this component interval statistics
     std::string topicName = rosNamespace + "/period_statistics";
-    this->AddPublisherFromCommandRead<mtsIntervalStatistics, cisst_msgs::mtsIntervalStatistics>
+    this->AddPublisherFromCommandRead<mtsIntervalStatistics, cisst_msgs::msg::IntervalStatistics>
         (componentName + interfaceName, "period_statistics",
          topicName);
 
@@ -131,7 +133,7 @@ void mtsROSBridge::Startup(void)
 void mtsROSBridge::Cleanup(void)
 {
     if (!mSignal) {
-        ros::requestShutdown();
+        rclcpp::shutdown();
     }
 }
 
@@ -148,7 +150,9 @@ void mtsROSBridge::Run(void)
         (*iter)->Execute();
     }
 
-    if (mSpin) ros::spinOnce();
+    if (mSpin) {
+        rclcpp::spin_some(mNodePointer);
+    }
 }
 
 bool mtsROSBridge::AddPublisherFromEventVoid(const std::string & interfaceRequiredName,
@@ -164,10 +168,11 @@ bool mtsROSBridge::AddPublisherFromEventVoid(const std::string & interfaceRequir
     }
 
     mtsROSEventVoidPublisher* newPublisher =
-        new mtsROSEventVoidPublisher(topicName, *(this->mNodeHandlePointer), queueSize, latch);
+        new mtsROSEventVoidPublisher(topicName, mNodePointer, queueSize, latch);
     if (!interfaceRequired->AddEventHandlerVoid(&mtsROSEventVoidPublisher::EventHandler, newPublisher, eventName))
         {
-            ROS_ERROR("mtsROSBridge::AddPublisherFromEventVoid: failed to add event handler to required interface.");
+            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
+                         "mtsROSBridge::AddPublisherFromEventVoid: failed to add event handler to required interface.");
             CMN_LOG_CLASS_INIT_ERROR << "AddPublisherFromEventVoid: failed to add event handler for \""
                                      << eventName << "\" to required interface \""
                                      << interfaceRequiredName << "\"" << std::endl;
@@ -188,15 +193,17 @@ bool mtsROSBridge::Addtf2BroadcasterFromCommandRead(const std::string & interfac
         interfaceRequired = this->AddInterfaceRequired(interfaceRequiredName);
     }
     if (!interfaceRequired) {
-        ROS_ERROR("mtsROSBridge::Addtf2BroadcasterFromCommandRead: failed to create required interface.");
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
+                     "mtsROSBridge::Addtf2BroadcasterFromCommandRead: failed to create required interface.");
         CMN_LOG_CLASS_INIT_ERROR << "Addtf2BroadcasterFromCommandRead: failed to create required interface \""
                                  << interfaceRequiredName << "\"" << std::endl;
         return false;
     }
     mtsROSPublisherBase * newPublisher =
-        new mtsROStf2Broadcaster(interfaceRequiredName + "::" + functionName);
+        new mtsROStf2Broadcaster(interfaceRequiredName + "::" + functionName, mNodePointer);
     if (!interfaceRequired->AddFunction(functionName, newPublisher->Function)) {
-        ROS_ERROR("mtsROSBridge::Addtf2BroadcasterFromCommandRead: failed to create function.");
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
+                     "mtsROSBridge::Addtf2BroadcasterFromCommandRead: failed to create function.");
         CMN_LOG_CLASS_INIT_ERROR << "Addtf2BroadcasterFromCommandRead: faild to create function \""
                                  << functionName << "\"" << std::endl;
         delete newPublisher;
@@ -218,16 +225,15 @@ bool mtsROSBridge::AddLogFromEventWrite(const std::string & interfaceRequiredNam
     }
 
     mtsROSEventWriteLog * newPublisher = new mtsROSEventWriteLog(level);
-    if (!interfaceRequired->AddEventHandlerWrite(&mtsROSEventWriteLog::EventHandler, newPublisher, eventName))
-        {
-            ROS_ERROR("mtsROSBridge::AddLogFromEventWrite: failed to add event handler to required interface.");
-            CMN_LOG_CLASS_INIT_ERROR << "AddLogFromEventWrite: failed to add event handler for \""
-                                     << eventName << "\" to required interface \""
-                                     << interfaceRequiredName << "\"" << std::endl;
-
-            delete newPublisher;
-            return false;
-        }
+    if (!interfaceRequired->AddEventHandlerWrite(&mtsROSEventWriteLog::EventHandler, newPublisher, eventName)) {
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
+                     "mtsROSBridge::AddLogFromEventWrite: failed to add event handler to required interface.");
+        CMN_LOG_CLASS_INIT_ERROR << "AddLogFromEventWrite: failed to add event handler for \""
+                                 << eventName << "\" to required interface \""
+                                 << interfaceRequiredName << "\"" << std::endl;
+        delete newPublisher;
+        return false;
+    }
     Publishers.push_back(newPublisher);
     return true;
 }
@@ -242,15 +248,17 @@ bool mtsROSBridge::AddSubscriberToCommandVoid(const std::string & interfaceRequi
         interfaceRequired = this->AddInterfaceRequired(interfaceRequiredName);
     }
     if (!interfaceRequired) {
-        ROS_ERROR("mtsROSBridge::AddSubscriberToCommandVoid: failed to create required interface.");
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
+                     "mtsROSBridge::AddSubscriberToCommandVoid: failed to create required interface.");
         CMN_LOG_CLASS_INIT_ERROR << "AddSubscriberToCommandVoid: faild to create required interface \""
                                  << interfaceRequiredName << "\"" << std::endl;
         return false;
     }
 
-    mtsROSSubscriberVoid * newSubscriber = new mtsROSSubscriberVoid(topicName, *(this->mNodeHandlePointer));
+    mtsROSSubscriberVoid * newSubscriber = new mtsROSSubscriberVoid(topicName, mNodePointer);
     if (!interfaceRequired->AddFunction(functionName, newSubscriber->Function)) {
-        ROS_ERROR("mtsROSBridge::AddSubscriberToCommandVoid: failed to create function.");
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
+                     "mtsROSBridge::AddSubscriberToCommandVoid: failed to create function.");
         CMN_LOG_CLASS_INIT_ERROR << "AddSubscriberToCommandVoid: failed to create function \""
                                  << functionName << "\"" << std::endl;
         delete newSubscriber;
@@ -272,10 +280,11 @@ bool mtsROSBridge::AddPublisherFromCommandVoid(const std::string & interfaceProv
     }
 
     mtsROSCommandVoidPublisher* newPublisher =
-        new mtsROSCommandVoidPublisher(topicName, *(this->mNodeHandlePointer), queueSize, latch);
+        new mtsROSCommandVoidPublisher(topicName, mNodePointer, queueSize, latch);
     if (!interfaceProvided->AddCommandVoid(&mtsROSCommandVoidPublisher::Command,
                                            newPublisher, commandName)) {
-        ROS_ERROR("mtsROSBridge::AddPublisherFromCommandVoid: failed to create provided interface.");
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
+                     "mtsROSBridge::AddPublisherFromCommandVoid: failed to create provided interface.");
         CMN_LOG_CLASS_INIT_ERROR << "mtsROSBridge::AddPublisherFromCommandVoid: failed to create provided interface \""
                                  << interfaceProvidedName << "\"" << std::endl;
         delete newPublisher;
@@ -294,10 +303,11 @@ bool mtsROSBridge::AddSubscriberToEventVoid(const std::string & interfaceProvide
         interfaceProvided = this->AddInterfaceProvided(interfaceProvidedName);
     }
 
-    mtsROSSubscriberVoid * newSubscriber = new mtsROSSubscriberVoid(topicName, *(this->mNodeHandlePointer));
+    mtsROSSubscriberVoid * newSubscriber = new mtsROSSubscriberVoid(topicName, mNodePointer);
     if (!interfaceProvided->AddEventVoid(newSubscriber->Function,
                                          eventName)) {
-        ROS_ERROR("mtsROSBridge::AddSubscriberToEventVoid: failed to add event to provided interface.");
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
+                     "mtsROSBridge::AddSubscriberToEventVoid: failed to add event to provided interface.");
         CMN_LOG_CLASS_INIT_ERROR << "mtsROSBridge::AddSubscriberToEventVoid: failed to add event \""
                                  << eventName << "\" to provided interface \""
                                  << interfaceProvidedName << "\"" << std::endl;

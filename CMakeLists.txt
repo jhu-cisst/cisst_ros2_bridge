@@ -8,6 +8,8 @@ find_package (geometry_msgs REQUIRED)
 find_package (sensor_msgs REQUIRED)
 find_package (diagnostic_msgs REQUIRED)
 find_package (cisst_msgs REQUIRED)
+find_package (tf2_ros REQUIRED)
+find_package (tf2_msgs REQUIRED)
 
 set (REQUIRED_CISST_LIBRARIES
   cisstCommon
@@ -38,16 +40,16 @@ set (SOURCE_FILES
 add_library (cisst_ros2_bridge ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries (cisst_ros2_bridge ${catkin_LIBRARIES})
 cisst_target_link_libraries (cisst_ros2_bridge ${REQUIRED_CISST_LIBRARIES})
-ament_target_dependencies(cisst_ros2_bridge rclcpp std_msgs geometry_msgs sensor_msgs diagnostic_msgs cisst_msgs)
+ament_target_dependencies(cisst_ros2_bridge rclcpp std_msgs geometry_msgs sensor_msgs diagnostic_msgs cisst_msgs tf2_ros)
 
 ## Declare a cpp executable
 add_executable (example_bridge example/main.cpp)
 target_link_libraries (example_bridge cisst_ros2_bridge ${catkin_LIBRARIES})
 cisst_target_link_libraries (example_bridge ${REQUIRED_CISST_LIBRARIES})
+ament_target_dependencies(example_bridge rclcpp std_msgs geometry_msgs sensor_msgs diagnostic_msgs cisst_msgs tf2_ros)
 
 install (TARGETS cisst_ros2_bridge example_bridge
-  LIBRARY DESTINATION lib/${PROJECT_NAME}
-  RUNTIME DESTINATION bin
+  DESTINATION lib/${PROJECT_NAME}
   )
 
 install (DIRECTORY include/${PROJECT_NAME}/
