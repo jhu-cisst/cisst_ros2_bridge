@@ -458,7 +458,7 @@ public:
             RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
                          "mtsROSCommandReadService::Callback: mtsFunction call failed");
             CMN_LOG_RUN_ERROR << "mtsROSCommandReadService::Callback: " << result
-                              << " for topic " << mServiceServer.getService() << std::endl;
+                              << " for service " << mName << std::endl;
         }
         return false;
     }
@@ -507,7 +507,7 @@ public:
             RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
                          "mtsROSCommandQualifiedReadService::Callback: mtsFunction call failed");
             CMN_LOG_RUN_ERROR << "mtsROSCommandReadService::Callback: " << result
-                              << " for topic " << mServiceServer.getService() << std::endl;
+                              << " for service " << mName << std::endl;
         }
         return false;
     }

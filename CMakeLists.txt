@@ -23,7 +23,7 @@ set (REQUIRED_CISST_LIBRARIES
 find_package (cisst 1.1.0 REQUIRED ${REQUIRED_CISST_LIBRARIES})
 include (${CISST_USE_FILE})
 
-include_directories(include)
+include_directories (include)
 
 # header
 set (HEADER_FILES
@@ -40,20 +40,38 @@ set (SOURCE_FILES
 add_library (cisst_ros2_bridge ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries (cisst_ros2_bridge ${catkin_LIBRARIES})
 cisst_target_link_libraries (cisst_ros2_bridge ${REQUIRED_CISST_LIBRARIES})
-ament_target_dependencies(cisst_ros2_bridge rclcpp std_msgs geometry_msgs sensor_msgs diagnostic_msgs cisst_msgs tf2_ros)
+ament_target_dependencies (cisst_ros2_bridge rclcpp std_msgs geometry_msgs sensor_msgs diagnostic_msgs cisst_msgs tf2_ros)
 
 ## Declare a cpp executable
 add_executable (example_bridge example/main.cpp)
 target_link_libraries (example_bridge cisst_ros2_bridge ${catkin_LIBRARIES})
 cisst_target_link_libraries (example_bridge ${REQUIRED_CISST_LIBRARIES})
-ament_target_dependencies(example_bridge rclcpp std_msgs geometry_msgs sensor_msgs diagnostic_msgs cisst_msgs tf2_ros)
+ament_target_dependencies (example_bridge
+  rclcpp
+  std_msgs
+  geometry_msgs
+  sensor_msgs
+  diagnostic_msgs
+  cisst_msgs
+  tf2_ros
+  )
 
 install (TARGETS cisst_ros2_bridge example_bridge
   DESTINATION lib/${PROJECT_NAME}
   )
 
-install (DIRECTORY include/${PROJECT_NAME}/
+install (DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
   )
+
+install (
+  TARGETS cisst_ros2_bridge
+  EXPORT cisst_ros2_bridge
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+  )
+ament_export_targets (cisst_ros2_bridge HAS_LIBRARY_TARGET)
 
 ament_package ()
