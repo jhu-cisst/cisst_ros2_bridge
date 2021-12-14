@@ -18,6 +18,7 @@
   <depend>cisst_msgs</depend>
   <depend>tf2_msgs</depend>
   <depend>tf2_ros</depend>
+  <depend>cisst</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
