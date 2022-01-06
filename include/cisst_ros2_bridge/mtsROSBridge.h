@@ -5,7 +5,7 @@
   Author(s):  Anton Deguet, Zihan Chen, Adnan Munawar
   Created on: 2013-05-21
 
-  (C) Copyright 2013-2021 Johns Hopkins University (JHU), All Rights Reserved.
+  (C) Copyright 2013-2022 Johns Hopkins University (JHU), All Rights Reserved.
 
 --- begin cisst license - do not edit ---
 
@@ -42,9 +42,19 @@ http://www.cisst.org/cisst/license.txt.
 
 class mtsROSPublisherBase
 {
+private:
+    //! Disable default constructor
+    mtsROSPublisherBase(void);
+
 public:
     //! Function used to pull data from the cisst component
     mtsFunctionRead Function;
+
+    mtsROSPublisherBase(const std::string & name,
+                        std::shared_ptr<rclcpp::Node> node):
+        mName(name),
+        mNode(node)
+    {}
 
     virtual ~mtsROSPublisherBase() {};
 
@@ -52,20 +62,21 @@ public:
 
 protected:
     std::string mName;
+    std::shared_ptr<rclcpp::Node> mNode;
 };
 
 template <typename _mtsType, typename _rosType>
 class mtsROSPublisher: public mtsROSPublisherBase
 {
 public:
-    mtsROSPublisher(const std::string & rosTopicName,
+    mtsROSPublisher(const std::string & name,
                     std::shared_ptr<rclcpp::Node> node,
                     const uint32_t queueSize = 5,
-                    const bool latch = false)
+                    const bool latch = false):
+        mtsROSPublisherBase(name, node)
     {
-        mName = rosTopicName;
         mPublisher =
-            node->create_publisher<_rosType>(rosTopicName,
+            node->create_publisher<_rosType>(name,
                                              queueSize); // xxx , latch);
     }
     virtual ~mtsROSPublisher() {
@@ -79,7 +90,7 @@ public:
         //}
         mtsExecutionResult result = Function(mCISSTData);
         if (result) {
-            if (mtsCISSTToROS(mCISSTData, mROSData, mName)) {
+            if (mtsCISSTToROS(mCISSTData, mROSData, mNode, mName)) {
                 mPublisher->publish(mROSData);
                 return true;
             }
@@ -102,13 +113,14 @@ protected:
 class mtsROSEventVoidPublisher: public mtsROSPublisherBase
 {
 public:
-    mtsROSEventVoidPublisher(const std::string & rosTopicName,
+    mtsROSEventVoidPublisher(const std::string & name,
                              std::shared_ptr<rclcpp::Node> node,
                              const uint32_t queueSize = 100,
-                             const bool latch = true)
+                             const bool latch = true):
+        mtsROSPublisherBase(name, node)
     {
         mPublisher =
-            node->create_publisher<std_msgs::msg::Empty>(rosTopicName,
+            node->create_publisher<std_msgs::msg::Empty>(name,
                                                          queueSize); // xxx , latch);
     }
     virtual ~mtsROSEventVoidPublisher() {
@@ -132,14 +144,14 @@ template <typename _mtsType, typename _rosType>
 class mtsROSEventWritePublisher: public mtsROSPublisherBase
 {
 public:
-    mtsROSEventWritePublisher(const std::string & rosTopicName,
+    mtsROSEventWritePublisher(const std::string & name,
                               std::shared_ptr<rclcpp::Node> node,
                               const uint32_t queueSize = 100,
-                              const bool latch = true)
+                              const bool latch = true):
+        mtsROSPublisherBase(name, node)
     {
-        mName = rosTopicName;
         mPublisher =
-            node->create_publisher<_rosType>(rosTopicName,
+            node->create_publisher<_rosType>(name,
                                              queueSize); // xxx , latch);
     }
     virtual ~mtsROSEventWritePublisher() {
@@ -154,7 +166,7 @@ public:
         // xxx if ((mPublisher.getNumSubscribers() == 0) && !mPublisher.isLatched()) {
         //     return;
         // }
-        if (mtsCISSTToROS(CISSTData, mROSData, mName)) {
+        if (mtsCISSTToROS(CISSTData, mROSData, mNode, mName)) {
             mPublisher->publish(mROSData);
         }
     }
@@ -171,17 +183,16 @@ class mtsROStf2Broadcaster: public mtsROSPublisherBase
 public:
     mtsROStf2Broadcaster(const std::string name,
                          std::shared_ptr<rclcpp::Node> node):
+        mtsROSPublisherBase(name, node),
         mBroadcaster(node)
-    {
-        mName = name;
-    }
+    {}
     virtual ~mtsROStf2Broadcaster() {
     }
 
     bool Execute(void) {
         mtsExecutionResult result = Function(mCISSTData);
         if (result) {
-            if (mtsCISSTToROS(mCISSTData, mROSData, mName)) {
+            if (mtsCISSTToROS(mCISSTData, mROSData, mNode, mName)) {
                 mBroadcaster.sendTransform(mROSData);
                 return true;
             }
@@ -207,7 +218,9 @@ class mtsROSEventWriteLog: public mtsROSPublisherBase
 public:
     enum LogLevel {ROS_LOG_DEBUG, ROS_LOG_INFO, ROS_LOG_WARN, ROS_LOG_ERROR, ROS_LOG_FATAL};
 
-    mtsROSEventWriteLog(const LogLevel level):
+    mtsROSEventWriteLog(const LogLevel level,
+                        std::shared_ptr<rclcpp::Node> node):
+        mtsROSPublisherBase("log", node),
         mLevel(level)
     {}
     virtual ~mtsROSEventWriteLog() {}
@@ -257,10 +270,12 @@ class mtsROSSubscriberWrite
 {
 public:
     typedef mtsROSSubscriberWrite<_mtsType, _rosType> ThisType;
-    mtsROSSubscriberWrite(const std::string & rosTopicName,
-                          std::shared_ptr<rclcpp::Node> node) {
+    mtsROSSubscriberWrite(const std::string & name,
+                          std::shared_ptr<rclcpp::Node> node):
+        mNode(node)
+    {
         mSubscriber =
-            node->create_subscription<_rosType>(rosTopicName,
+            node->create_subscription<_rosType>(name,
                                                 1, std::bind(&ThisType::Callback,
                                                              this,
                                                              std::placeholders::_1));
@@ -270,7 +285,7 @@ public:
     }
 
     void Callback(const std::shared_ptr<_rosType> rosData) {
-        mtsROSToCISST(*rosData, mCISSTData);
+        mtsROSToCISST(*rosData, mCISSTData, mNode);
         mtsExecutionResult result = Function(mCISSTData);
         if (!result) {
             RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
@@ -286,6 +301,7 @@ protected:
     typedef rclcpp::Subscription<_rosType> SubscriberType;
     typename SubscriberType::SharedPtr mSubscriber;
     _mtsType mCISSTData;
+    std::shared_ptr<rclcpp::Node> mNode;
 };
 
 
@@ -293,10 +309,10 @@ class mtsROSSubscriberVoid
 {
 public:
     typedef mtsROSSubscriberVoid ThisType;
-    mtsROSSubscriberVoid(const std::string & rosTopicName,
+    mtsROSSubscriberVoid(const std::string & name,
                          std::shared_ptr<rclcpp::Node> node) {
         mSubscriber =
-            node->create_subscription<std_msgs::msg::Empty>(rosTopicName,
+            node->create_subscription<std_msgs::msg::Empty>(name,
                                                             1, std::bind(&ThisType::Callback,
                                                                          this,
                                                                          std::placeholders::_1));
@@ -328,14 +344,15 @@ class mtsROSSubscriberStateTable
 {
 public:
     typedef mtsROSSubscriberStateTable<_mtsType, _rosType> ThisType;
-    mtsROSSubscriberStateTable(const std::string & rosTopicName,
+    mtsROSSubscriberStateTable(const std::string & name,
                                std::shared_ptr<rclcpp::Node> node,
                                const size_t & tableSize):
-        StateTable(tableSize, rosTopicName)
+        StateTable(tableSize, name),
+        mNode(node)
     {
-        StateTable.AddData(CISSTData, rosTopicName);
+        StateTable.AddData(CISSTData, name);
         mSubscriber =
-            node->create_subscription<_rosType>(rosTopicName,
+            node->create_subscription<_rosType>(name,
                                                 1, std::bind(&ThisType::Callback,
                                                              this,
                                                              std::placeholders::_1));
@@ -346,7 +363,7 @@ public:
 
     void Callback(const std::shared_ptr<_rosType> rosData) {
         StateTable.Start();
-        mtsROSToCISST(*rosData, CISSTData);
+        mtsROSToCISST(*rosData, CISSTData, mNode);
         StateTable.Advance();
     }
 
@@ -356,6 +373,7 @@ public:
 protected:
     typedef rclcpp::Subscription<_rosType> SubscriberType;
     typename SubscriberType::SharedPtr mSubscriber;
+    std::shared_ptr<rclcpp::Node> mNode;
 };
 
 
@@ -363,14 +381,15 @@ template <typename _mtsType, typename _rosType>
 class mtsROSCommandWritePublisher
 {
 public:
-    mtsROSCommandWritePublisher(const std::string & rosTopicName,
+    mtsROSCommandWritePublisher(const std::string & name,
                                 std::shared_ptr<rclcpp::Node> node,
                                 const uint32_t queueSize = 100,
                                 const bool latch = false)
     {
-        mName = rosTopicName;
+        mName = name;
+        mNode = node;
         mPublisher =
-            node->create_publisher<_rosType>(rosTopicName,
+            node->create_publisher<_rosType>(name,
                                              queueSize); // xxx , latch);
     }
     virtual ~mtsROSCommandWritePublisher() {
@@ -381,7 +400,7 @@ public:
         // xxx if ((mPublisher.getNumSubscribers() == 0) && !mPublisher.isLatched()) {
         //    return;
         // }
-        if (mtsCISSTToROS(CISSTData, mROSData, mName)) {
+        if (mtsCISSTToROS(CISSTData, mROSData, mNode, mName)) {
             mPublisher->publish(mROSData);
         }
     }
@@ -390,6 +409,7 @@ protected:
     typedef rclcpp::Publisher<_rosType> PublisherType;
     typename PublisherType::SharedPtr mPublisher;
     std::string mName;
+    std::shared_ptr<rclcpp::Node> mNode;
     _rosType mROSData;
 };
 
@@ -397,13 +417,13 @@ protected:
 class mtsROSCommandVoidPublisher
 {
 public:
-    mtsROSCommandVoidPublisher(const std::string & rosTopicName,
+    mtsROSCommandVoidPublisher(const std::string & name,
                                std::shared_ptr<rclcpp::Node> node,
                                const uint32_t queueSize = 100,
                                const bool latch = false)
     {
         mPublisher =
-            node->create_publisher<std_msgs::msg::Empty>(rosTopicName,
+            node->create_publisher<std_msgs::msg::Empty>(name,
                                                          queueSize); // xxx , latch);
     }
     virtual ~mtsROSCommandVoidPublisher() {
@@ -435,12 +455,13 @@ public:
 
     mtsFunctionRead Function;
 
-    mtsROSCommandReadService(const std::string rosServiceName,
-                             std::shared_ptr<rclcpp::Node> node)
+    mtsROSCommandReadService(const std::string name,
+                             std::shared_ptr<rclcpp::Node> node):
+        mName(name),
+        mNode(node)
     {
-        mName = rosServiceName;
         mServiceServer =
-            node->create_service<_rosQueryType>(rosServiceName,
+            node->create_service<_rosQueryType>(name,
                                                 std::bind(&ThisType::Callback,
                                                           this,
                                                           std::placeholders::_1,
@@ -451,7 +472,7 @@ public:
                   std::shared_ptr<typename _rosQueryType::Response> response) {
         mtsExecutionResult result = Function(mResponse);
         if (result) {
-            if (mtsCISSTToROS(mResponse, *response, mName)) {
+            if (mtsCISSTToROS(mResponse, *response, mNode, mName)) {
                 return true;
             }
         } else {
@@ -468,6 +489,7 @@ protected:
     typedef rclcpp::Service<_rosQueryType> ServerServiceType;
     typename ServerServiceType::SharedPtr mServiceServer;
     std::string mName;
+    std::shared_ptr<rclcpp::Node> mNode;
 };
 
 
@@ -483,12 +505,13 @@ public:
 
     mtsFunctionQualifiedRead Function;
 
-    mtsROSCommandQualifiedReadService(const std::string rosServiceName,
-                                      std::shared_ptr<rclcpp::Node> node)
+    mtsROSCommandQualifiedReadService(const std::string name,
+                                      std::shared_ptr<rclcpp::Node> node):
+        mName(name),
+        mNode(node)
     {
-        mName = rosServiceName;
         mServiceServer =
-            node->create_service<_rosQueryType>(rosServiceName,
+            node->create_service<_rosQueryType>(name,
                                                 std::bind(&ThisType::Callback,
                                                           this,
                                                           std::placeholders::_1,
@@ -497,10 +520,10 @@ public:
 
     bool Callback(const std::shared_ptr<typename _rosQueryType::Request> request,
                   std::shared_ptr<typename _rosQueryType::Response> response) {
-        mtsROSToCISST(*request, mRequest);
+        mtsROSToCISST(*request, mRequest, mNode);
         mtsExecutionResult result = Function(mRequest, mResponse);
         if (result) {
-            if (mtsCISSTToROS(mResponse, *response, mName)) {
+            if (mtsCISSTToROS(mResponse, *response, mNode, mName)) {
                 return true;
             }
         } else {
@@ -518,6 +541,7 @@ protected:
     typedef rclcpp::Service<_rosQueryType> ServerServiceType;
     typename ServerServiceType::SharedPtr mServiceServer;
     std::string mName;
+    std::shared_ptr<rclcpp::Node> mNode;
 };
 
 

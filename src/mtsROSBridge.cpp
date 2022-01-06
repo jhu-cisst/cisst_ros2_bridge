@@ -5,7 +5,7 @@
   Author(s):  Anton Deguet, Zihan Chen
   Created on: 2013-05-21
 
-  (C) Copyright 2013-2020 Johns Hopkins University (JHU), All Rights Reserved.
+  (C) Copyright 2013-2022 Johns Hopkins University (JHU), All Rights Reserved.
 
 --- begin cisst license - do not edit ---
 
@@ -224,7 +224,7 @@ bool mtsROSBridge::AddLogFromEventWrite(const std::string & interfaceRequiredNam
         interfaceRequired = this->AddInterfaceRequired(interfaceRequiredName);
     }
 
-    mtsROSEventWriteLog * newPublisher = new mtsROSEventWriteLog(level);
+    mtsROSEventWriteLog * newPublisher = new mtsROSEventWriteLog(level, mNodePointer);
     if (!interfaceRequired->AddEventHandlerWrite(&mtsROSEventWriteLog::EventHandler, newPublisher, eventName)) {
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
                      "mtsROSBridge::AddLogFromEventWrite: failed to add event handler to required interface.");

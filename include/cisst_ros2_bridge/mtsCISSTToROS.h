@@ -5,7 +5,7 @@
   Author(s):  Anton Deguet, Zihan Chen
   Created on: 2013-05-21
 
-  (C) Copyright 2013-2020 Johns Hopkins University (JHU), All Rights Reserved.
+  (C) Copyright 2013-2022 Johns Hopkins University (JHU), All Rights Reserved.
 
 --- begin cisst license - do not edit ---
 
@@ -44,7 +44,7 @@ http://www.cisst.org/cisst/license.txt.
 #include <cisstParameterTypes/prmOperatingState.h>
 
 // ros include
-#include <rclcpp/clock.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/float64.hpp>
 #include <std_msgs/msg/bool.hpp>
@@ -99,25 +99,25 @@ void mtsCISSTToROSTransform(const _cisstFrame & cisstFrame, _rosTransform & rosT
 }
 
 template <typename _cisstType, typename _rosType>
-bool mtsCISSTToROSHeader(const _cisstType & cisstData, _rosType & rosData, const std::string & debugInfo)
+bool mtsCISSTToROSHeader(const _cisstType & cisstData, _rosType & rosData,
+                         std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo)
 {
     if (!cisstData.Valid()) {
         return false;
     }
     try {
         const double cisstDataTime = cisstData.Timestamp();
-        rclcpp::Clock clock;
         if (cisstDataTime > 0.0) {
             const double age =
                 mtsManagerLocal::GetInstance()->GetTimeServer().GetRelativeTime()
                 - cisstDataTime;
             if (age > 0.0) {
-                rosData.header.stamp = clock.now() - rclcpp::Duration(age);
+                rosData.header.stamp = node->get_clock()->now() - rclcpp::Duration::from_seconds(age);
             } else {
-                rosData.header.stamp = clock.now();
+                rosData.header.stamp = node->get_clock()->now();
             }
         } else {
-            rosData.header.stamp = clock.now();
+            rosData.header.stamp = node->get_clock()->now();
         }
     } catch (std::exception & e) {
         CMN_LOG_RUN_ERROR << "mtsCISSTToROSHeader caught exception \""
@@ -130,90 +130,130 @@ bool mtsCISSTToROSHeader(const _cisstType & cisstData, _rosType & rosData, const
 }
 
 template <typename _rosType>
-bool mtsCISSTToROSHeader(_rosType & rosData, const std::string & CMN_UNUSED(debugInfo))
+bool mtsCISSTToROSHeader(_rosType & rosData, std::shared_ptr<rclcpp::Node> node,
+                         const std::string & CMN_UNUSED(debugInfo))
 {
     rclcpp::Clock clock;
-    rosData.header.stamp = clock.now();
+    rosData.header.stamp = node->get_clock()->now();
     return true;
 }
 
 // std_msgs
-bool mtsCISSTToROS(const double & cisstData, std_msgs::msg::Float32 & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const double & cisstData, std_msgs::msg::Float64 & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const int & cisstData, std_msgs::msg::Int32 & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const bool & cisstData, std_msgs::msg::Bool & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const bool & cisstData, cisst_msgs::msg::BoolStamped & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const bool & cisstData, sensor_msgs::msg::Joy & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const std::string & cisstData, std_msgs::msg::String & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const mtsMessage & cisstData, std_msgs::msg::String & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmEventButton & cisstData, std_msgs::msg::Bool & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmEventButton & cisstData, cisst_msgs::msg::BoolStamped & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmEventButton & cisstData, sensor_msgs::msg::Joy & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const vctDoubleVec & cisstData, std_msgs::msg::Float64MultiArray & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const vctDoubleMat & cisstData, std_msgs::msg::Float64MultiArray & rosData, const std::string & debugInfo);
+bool mtsCISSTToROS(const double & cisstData, std_msgs::msg::Float32 & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const double & cisstData, std_msgs::msg::Float64 & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const int & cisstData, std_msgs::msg::Int32 & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const bool & cisstData, std_msgs::msg::Bool & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const bool & cisstData, cisst_msgs::msg::BoolStamped & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const bool & cisstData, sensor_msgs::msg::Joy & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const std::string & cisstData, std_msgs::msg::String & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const mtsMessage & cisstData, std_msgs::msg::String & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmEventButton & cisstData, std_msgs::msg::Bool & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmEventButton & cisstData, cisst_msgs::msg::BoolStamped & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmEventButton & cisstData, sensor_msgs::msg::Joy & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const vctDoubleVec & cisstData, std_msgs::msg::Float64MultiArray & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const vctDoubleMat & cisstData, std_msgs::msg::Float64MultiArray & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
 
 // geometry_msgs
-bool mtsCISSTToROS(const prmPositionCartesianGet & cisstData, geometry_msgs::msg::Transform & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmPositionCartesianGet & cisstData, geometry_msgs::msg::TransformStamped & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmPositionCartesianGet & cisstData, geometry_msgs::msg::Pose & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmPositionCartesianGet & cisstData, geometry_msgs::msg::PoseStamped & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmPositionCartesianArrayGet & cisstData, geometry_msgs::msg::PoseArray & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmPositionCartesianSet & cisstData, geometry_msgs::msg::Pose & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const vctFrm4x4 & cisstData, geometry_msgs::msg::Pose & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const mtsFrm4x4 & cisstData, geometry_msgs::msg::Pose & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const vctFrm3 & cisstData, geometry_msgs::msg::Pose & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const vctFrm4x4 & cisstData, geometry_msgs::msg::Transform & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const mtsFrm4x4 & cisstData, geometry_msgs::msg::Transform & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmPositionCartesianSet & cisstData, geometry_msgs::msg::TransformStamped & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const mtsFrm4x4 & cisstData, geometry_msgs::msg::TransformStamped & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const vctFrm3 & cisstData, geometry_msgs::msg::Transform & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const vct3 & cisstData, geometry_msgs::msg::Vector3 & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const vctMatRot3 & cisstData, geometry_msgs::msg::Quaternion & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const vctMatRot3 & cisstData, geometry_msgs::msg::QuaternionStamped & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const mtsDoubleVec & cisstData, geometry_msgs::msg::Wrench & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const mtsDoubleVec & cisstData, geometry_msgs::msg::WrenchStamped & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const mtsDoubleVec & cisstData, geometry_msgs::msg::Vector3Stamped & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmVelocityCartesianGet & cisstData, geometry_msgs::msg::Twist & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmVelocityCartesianGet & cisstData, geometry_msgs::msg::TwistStamped & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmForceCartesianGet & cisstData, geometry_msgs::msg::Wrench & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmForceCartesianGet & cisstData, geometry_msgs::msg::WrenchStamped & rosData, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmPositionCartesianGet & cisstData, geometry_msgs::msg::Transform & rosData
+                   , std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmPositionCartesianGet & cisstData, geometry_msgs::msg::TransformStamped & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmPositionCartesianGet & cisstData, geometry_msgs::msg::Pose & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmPositionCartesianGet & cisstData, geometry_msgs::msg::PoseStamped & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmPositionCartesianArrayGet & cisstData, geometry_msgs::msg::PoseArray & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmPositionCartesianSet & cisstData, geometry_msgs::msg::Pose & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const vctFrm4x4 & cisstData, geometry_msgs::msg::Pose & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const mtsFrm4x4 & cisstData, geometry_msgs::msg::Pose & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const vctFrm3 & cisstData, geometry_msgs::msg::Pose & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const vctFrm4x4 & cisstData, geometry_msgs::msg::Transform & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const mtsFrm4x4 & cisstData, geometry_msgs::msg::Transform & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmPositionCartesianSet & cisstData, geometry_msgs::msg::TransformStamped & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const mtsFrm4x4 & cisstData, geometry_msgs::msg::TransformStamped & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const vctFrm3 & cisstData, geometry_msgs::msg::Transform & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const vct3 & cisstData, geometry_msgs::msg::Vector3 & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const vctMatRot3 & cisstData, geometry_msgs::msg::Quaternion & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const vctMatRot3 & cisstData, geometry_msgs::msg::QuaternionStamped & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const mtsDoubleVec & cisstData, geometry_msgs::msg::Wrench & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const mtsDoubleVec & cisstData, geometry_msgs::msg::WrenchStamped & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const mtsDoubleVec & cisstData, geometry_msgs::msg::Vector3Stamped & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmVelocityCartesianGet & cisstData, geometry_msgs::msg::Twist & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmVelocityCartesianGet & cisstData, geometry_msgs::msg::TwistStamped & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmForceCartesianGet & cisstData, geometry_msgs::msg::Wrench & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmForceCartesianGet & cisstData, geometry_msgs::msg::WrenchStamped & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
 
 // sensor_msgs
-bool mtsCISSTToROS(const vctDoubleVec & cisstData, sensor_msgs::msg::JointState & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmPositionJointGet & cisstData, sensor_msgs::msg::JointState & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmPositionJointSet & cisstData, sensor_msgs::msg::JointState & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmVelocityJointGet & cisstData, sensor_msgs::msg::JointState & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmStateJoint & cisstData, sensor_msgs::msg::JointState & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const vctDoubleMat & cisstData, sensor_msgs::msg::PointCloud & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const std::vector<vct3> & cisstData, sensor_msgs::msg::PointCloud & rosData, const std::string & debugInfo);
-bool mtsCISSTToROS(const prmInputData & cisstData, sensor_msgs::msg::Joy & rosData, const std::string & debugInfo);
+bool mtsCISSTToROS(const vctDoubleVec & cisstData, sensor_msgs::msg::JointState & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmPositionJointGet & cisstData, sensor_msgs::msg::JointState & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmPositionJointSet & cisstData, sensor_msgs::msg::JointState & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmVelocityJointGet & cisstData, sensor_msgs::msg::JointState & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmStateJoint & cisstData, sensor_msgs::msg::JointState & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const vctDoubleMat & cisstData, sensor_msgs::msg::PointCloud & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const std::vector<vct3> & cisstData, sensor_msgs::msg::PointCloud & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmInputData & cisstData, sensor_msgs::msg::Joy & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
 
 // diagnostic_msgs
-bool mtsCISSTToROS(const prmKeyValue & cisstData, diagnostic_msgs::msg::KeyValue & rosData, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmKeyValue & cisstData, diagnostic_msgs::msg::KeyValue & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
 
 // std_srvs
-bool mtsCISSTToROS(const bool & cisstData,
-                   std_srvs::srv::Trigger::Response & rosData,
-                   const std::string & debugInfo);
-bool mtsCISSTToROS(const std::string & cisstData,
-                   std_srvs::srv::Trigger::Response & rosData,
-                   const std::string & debugInfo);
+bool mtsCISSTToROS(const bool & cisstData, std_srvs::srv::Trigger::Response & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const std::string & cisstData, std_srvs::srv::Trigger::Response & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
 
 // cisst_msgs
-bool mtsCISSTToROS(const prmPositionJointGet & cisstData,
-                   cisst_msgs::msg::DoubleVec & rosData,
-                   const std::string & debugInfo);
-bool mtsCISSTToROS(const vctDoubleVec & cisstData,
-                   cisst_msgs::msg::DoubleVec & rosData,
-                   const std::string & debugInfo);
-bool mtsCISSTToROS(const prmCartesianImpedanceGains & cisstData,
-                   cisst_msgs::msg::CartesianImpedanceGains & rosData,
-                   const std::string & debugInfo);
-bool mtsCISSTToROS(const mtsIntervalStatistics & cisstData,
-                   cisst_msgs::msg::IntervalStatistics & rosData,
-                   const std::string & debugInfo);
-bool mtsCISSTToROS(const vctFrm4x4 & cisstData,
-                   cisst_msgs::srv::QueryForwardKinematics::Response & rosData,
-                   const std::string & debugInfo);
+bool mtsCISSTToROS(const prmPositionJointGet & cisstData, cisst_msgs::msg::DoubleVec & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const vctDoubleVec & cisstData, cisst_msgs::msg::DoubleVec & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmCartesianImpedanceGains & cisstData, cisst_msgs::msg::CartesianImpedanceGains & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const mtsIntervalStatistics & cisstData, cisst_msgs::msg::IntervalStatistics & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const vctFrm4x4 & cisstData, cisst_msgs::srv::QueryForwardKinematics::Response & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
 
 #endif // _mtsCISSTToROS_h
