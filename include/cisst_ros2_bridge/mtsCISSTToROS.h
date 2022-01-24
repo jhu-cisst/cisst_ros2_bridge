@@ -37,6 +37,7 @@ http://www.cisst.org/cisst/license.txt.
 #include <cisstParameterTypes/prmPositionCartesianSet.h>
 #include <cisstParameterTypes/prmVelocityCartesianGet.h>
 #include <cisstParameterTypes/prmForceCartesianGet.h>
+#include <cisstParameterTypes/prmForceCartesianSet.h>
 #include <cisstParameterTypes/prmEventButton.h>
 #include <cisstParameterTypes/prmCartesianImpedanceGains.h>
 #include <cisstParameterTypes/prmInputData.h>
@@ -96,6 +97,17 @@ void mtsCISSTToROSTransform(const _cisstFrame & cisstFrame, _rosTransform & rosT
     rosTransform.translation.x = cisstFrame.Translation().X();
     rosTransform.translation.y = cisstFrame.Translation().Y();
     rosTransform.translation.z = cisstFrame.Translation().Z();
+}
+
+template <typename _cisstVector, typename _rosWrench>
+void mtsCISSTToROSWrench(const _cisstVector & cisstVector, _rosWrench & rosWrench)
+{
+    rosWrench.force.x = cisstVector.Element(0);
+    rosWrench.force.y = cisstVector.Element(1);
+    rosWrench.force.z = cisstVector.Element(2);
+    rosWrench.torque.x = cisstVector.Element(3);
+    rosWrench.torque.y = cisstVector.Element(4);
+    rosWrench.torque.z = cisstVector.Element(5);
 }
 
 template <typename _cisstType, typename _rosType>
@@ -201,6 +213,10 @@ bool mtsCISSTToROS(const vctMatRot3 & cisstData, geometry_msgs::msg::Quaternion 
                    std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
 bool mtsCISSTToROS(const vctMatRot3 & cisstData, geometry_msgs::msg::QuaternionStamped & rosData,
                    std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const vct6 & cisstData, geometry_msgs::msg::Wrench & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const vct6 & cisstData, geometry_msgs::msg::WrenchStamped & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
 bool mtsCISSTToROS(const mtsDoubleVec & cisstData, geometry_msgs::msg::Wrench & rosData,
                    std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
 bool mtsCISSTToROS(const mtsDoubleVec & cisstData, geometry_msgs::msg::WrenchStamped & rosData,
@@ -214,6 +230,10 @@ bool mtsCISSTToROS(const prmVelocityCartesianGet & cisstData, geometry_msgs::msg
 bool mtsCISSTToROS(const prmForceCartesianGet & cisstData, geometry_msgs::msg::Wrench & rosData,
                    std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
 bool mtsCISSTToROS(const prmForceCartesianGet & cisstData, geometry_msgs::msg::WrenchStamped & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmForceCartesianSet & cisstData, geometry_msgs::msg::Wrench & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmForceCartesianSet & cisstData, geometry_msgs::msg::WrenchStamped & rosData,
                    std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
 
 // sensor_msgs

@@ -326,6 +326,21 @@ bool mtsCISSTToROS(const vctMatRot3 & cisstData, geometry_msgs::msg::QuaternionS
     return true;
 }
 
+bool mtsCISSTToROS(const vct6 & cisstData, geometry_msgs::msg::Wrench & rosData,
+                   std::shared_ptr<rclcpp::Node>, const std::string & debugInfo)
+{
+    mtsCISSTToROSWrench(cisstData, rosData);
+    return true;
+}
+
+bool mtsCISSTToROS(const vct6 & cisstData, geometry_msgs::msg::WrenchStamped & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo)
+{
+    mtsCISSTToROSHeader(rosData, node, debugInfo);
+    mtsCISSTToROSWrench(cisstData, rosData.wrench);
+    return true;
+}
+
 bool mtsCISSTToROS(const mtsDoubleVec & cisstData, geometry_msgs::msg::Wrench & rosData,
                    std::shared_ptr<rclcpp::Node>, const std::string & debugInfo)
 {
@@ -336,12 +351,7 @@ bool mtsCISSTToROS(const mtsDoubleVec & cisstData, geometry_msgs::msg::Wrench & 
                           << "\"" << std::endl;
         return false;
     }
-    rosData.force.x = cisstData.Element(0);
-    rosData.force.y = cisstData.Element(1);
-    rosData.force.z = cisstData.Element(2);
-    rosData.torque.x = cisstData.Element(3);
-    rosData.torque.y = cisstData.Element(4);
-    rosData.torque.z = cisstData.Element(5);
+    mtsCISSTToROSWrench(cisstData, rosData);
     return true;
 }
 
@@ -356,12 +366,7 @@ bool mtsCISSTToROS(const mtsDoubleVec & cisstData, geometry_msgs::msg::WrenchSta
         return false;
     }
     mtsCISSTToROSHeader(cisstData, rosData, node, debugInfo);
-    rosData.wrench.force.x = cisstData.Element(0);
-    rosData.wrench.force.y = cisstData.Element(1);
-    rosData.wrench.force.z = cisstData.Element(2);
-    rosData.wrench.torque.x = cisstData.Element(3);
-    rosData.wrench.torque.y = cisstData.Element(4);
-    rosData.wrench.torque.z = cisstData.Element(5);
+    mtsCISSTToROSWrench(cisstData, rosData.wrench);
     return true;
 }
 
@@ -413,12 +418,7 @@ bool mtsCISSTToROS(const prmForceCartesianGet & cisstData, geometry_msgs::msg::W
                    std::shared_ptr<rclcpp::Node>, const std::string &)
 {
     if (cisstData.Valid()) {
-        rosData.force.x = cisstData.Force().Element(0);
-        rosData.force.y = cisstData.Force().Element(1);
-        rosData.force.z = cisstData.Force().Element(2);
-        rosData.torque.x = cisstData.Force().Element(3);
-        rosData.torque.y = cisstData.Force().Element(4);
-        rosData.torque.z = cisstData.Force().Element(5);
+        mtsCISSTToROSWrench(cisstData.Force(), rosData);
         return true;
     }
     return false;
@@ -429,6 +429,26 @@ bool mtsCISSTToROS(const prmForceCartesianGet & cisstData, geometry_msgs::msg::W
 {
     if (mtsCISSTToROSHeader(cisstData, rosData, node, debugInfo)) {
         rosData.header.frame_id = cisstData.MovingFrame();
+        mtsCISSTToROS(cisstData, rosData.wrench, node, debugInfo);
+        return true;
+    }
+    return false;
+}
+
+bool mtsCISSTToROS(const prmForceCartesianSet & cisstData, geometry_msgs::msg::Wrench & rosData,
+                   std::shared_ptr<rclcpp::Node>, const std::string &)
+{
+    if (cisstData.Valid()) {
+        mtsCISSTToROSWrench(cisstData.Force(), rosData);
+        return true;
+    }
+    return false;
+}
+
+bool mtsCISSTToROS(const prmForceCartesianSet & cisstData, geometry_msgs::msg::WrenchStamped & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo)
+{
+    if (mtsCISSTToROSHeader(cisstData, rosData, node, debugInfo)) {
         mtsCISSTToROS(cisstData, rosData.wrench, node, debugInfo);
         return true;
     }
