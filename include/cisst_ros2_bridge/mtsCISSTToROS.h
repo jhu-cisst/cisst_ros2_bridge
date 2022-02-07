@@ -31,6 +31,7 @@ http://www.cisst.org/cisst/license.txt.
 #include <cisstParameterTypes/prmPositionJointGet.h>
 #include <cisstParameterTypes/prmPositionJointSet.h>
 #include <cisstParameterTypes/prmVelocityJointGet.h>
+#include <cisstParameterTypes/prmForceTorqueJointSet.h>
 #include <cisstParameterTypes/prmStateJoint.h>
 #include <cisstParameterTypes/prmPositionCartesianGet.h>
 #include <cisstParameterTypes/prmPositionCartesianArrayGet.h>
@@ -191,6 +192,8 @@ bool mtsCISSTToROS(const prmPositionCartesianArrayGet & cisstData, geometry_msgs
                    std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
 bool mtsCISSTToROS(const prmPositionCartesianSet & cisstData, geometry_msgs::msg::Pose & rosData,
                    std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmPositionCartesianSet & cisstData, geometry_msgs::msg::PoseStamped & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
 bool mtsCISSTToROS(const vctFrm4x4 & cisstData, geometry_msgs::msg::Pose & rosData,
                    std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
 bool mtsCISSTToROS(const mtsFrm4x4 & cisstData, geometry_msgs::msg::Pose & rosData,
@@ -244,6 +247,8 @@ bool mtsCISSTToROS(const prmPositionJointGet & cisstData, sensor_msgs::msg::Join
 bool mtsCISSTToROS(const prmPositionJointSet & cisstData, sensor_msgs::msg::JointState & rosData,
                    std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
 bool mtsCISSTToROS(const prmVelocityJointGet & cisstData, sensor_msgs::msg::JointState & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
+bool mtsCISSTToROS(const prmForceTorqueJointSet & cisstData, sensor_msgs::msg::JointState & rosData,
                    std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);
 bool mtsCISSTToROS(const prmStateJoint & cisstData, sensor_msgs::msg::JointState & rosData,
                    std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo);

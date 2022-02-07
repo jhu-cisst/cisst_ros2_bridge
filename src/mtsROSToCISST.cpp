@@ -66,6 +66,36 @@ void mtsROSToCISST(const std_msgs::msg::Float64MultiArray & rosData, vctDoubleVe
     }
 }
 
+void mtsROSToCISST(const std_msgs::msg::Float64MultiArray & rosData, vctDoubleMat & cisstData,
+                   std::shared_ptr<rclcpp::Node>)
+{
+    if (rosData.layout.dim.size() != 2) {
+        cmnThrow("mtsROSToCISST(std::msgs::Float64MultiArray, vctDoubleMat): incoming array dimension is not 2");
+    }
+    // assuming rows/cols for data storage.  In mtsCISSTToROS we
+    // labelled the dimensions using "rows" and "cols" so we're making
+    // sure names are the same.  This might be annoying for data
+    // coming from other packages and we might have to change this
+    // check.  We could also add support for cols/rows storage order
+    if ((rosData.layout.dim[0].label != "rows")
+        || (rosData.layout.dim[1].label != "cols")) {
+        cmnThrow("mtsROSToCISST(std::msgs::Float64MultiArray, vctDoubleMat): dimensions must be labelled \"rows\" and \"cols\"");
+    }
+    // now check the strides and sizes
+    const size_t rows = rosData.layout.dim[0].size;
+    const size_t cols = rosData.layout.dim[1].size;
+    if (rosData.layout.dim[0].stride != 1) {
+        cmnThrow("mtsROSToCISST(std::msgs::Float64MultiArray, vctDoubleMat): dim[0].stride must be equal to 1");
+    }
+    if (rosData.layout.dim[1].stride != rows) {
+        cmnThrow("mtsROSToCISST(std::msgs::Float64MultiArray, vctDoubleMat): dim[1].stride must be equal to number of rows");
+    }
+    // now allocate and copy data
+    cisstData.SetSize(rows, cols);
+    std::copy(rosData.data.begin(), rosData.data.end(),
+              cisstData.begin());
+}
+
 void mtsROSToCISST(const geometry_msgs::msg::Vector3 & rosData, vct3 & cisstData,
                    std::shared_ptr<rclcpp::Node>)
 {
@@ -192,6 +222,23 @@ void mtsROSToCISST(const geometry_msgs::msg::TransformStamped & rosData, mtsFrm4
     mtsROSTransformToCISST(rosData.transform, cisstData);
 }
 
+void mtsROSToCISST(const geometry_msgs::msg::Wrench & rosData, prmForceCartesianGet & cisstData,
+                   std::shared_ptr<rclcpp::Node>)
+{
+    mtsROSToCISSTNoHeader(cisstData);
+    vctFixedSizeVector<double, 6>
+        vctFT(rosData.force.x, rosData.force.y, rosData.force.z,
+              rosData.torque.x, rosData.torque.y, rosData.torque.z);
+    cisstData.SetForce(vctFT);
+}
+
+void mtsROSToCISST(const geometry_msgs::msg::WrenchStamped & rosData, prmForceCartesianGet & cisstData,
+                   std::shared_ptr<rclcpp::Node> node)
+{
+    mtsROSToCISSTHeader(rosData, cisstData, node);
+    mtsROSToCISST(rosData.wrench, cisstData, node);
+}
+
 void mtsROSToCISST(const geometry_msgs::msg::Wrench & rosData, prmForceCartesianSet & cisstData,
                    std::shared_ptr<rclcpp::Node>)
 {
@@ -229,6 +276,21 @@ void mtsROSToCISST(const geometry_msgs::msg::WrenchStamped & rosData, mtsDoubleV
     mtsROSToCISST(rosData.wrench, cisstData, node);
 }
 
+void mtsROSToCISST(const geometry_msgs::msg::Twist & rosData, prmVelocityCartesianGet & cisstData,
+                   std::shared_ptr<rclcpp::Node>)
+{
+    mtsROSToCISSTNoHeader(cisstData);
+    cisstData.SetVelocityLinear(vct3(rosData.linear.x, rosData.linear.y, rosData.linear.z));
+    cisstData.SetVelocityAngular(vct3(rosData.angular.x, rosData.angular.y, rosData.angular.z));
+}
+
+void mtsROSToCISST(const geometry_msgs::msg::TwistStamped & rosData, prmVelocityCartesianGet & cisstData,
+                   std::shared_ptr<rclcpp::Node> node)
+{
+    mtsROSToCISSTHeader(rosData, cisstData, node);
+    mtsROSToCISST(rosData.twist, cisstData, node);
+}
+
 void mtsROSToCISST(const geometry_msgs::msg::Twist & rosData, prmVelocityCartesianSet & cisstData,
                    std::shared_ptr<rclcpp::Node>)
 {
@@ -243,7 +305,6 @@ void mtsROSToCISST(const geometry_msgs::msg::TwistStamped & rosData, prmVelocity
     mtsROSToCISSTHeader(rosData, cisstData, node);
     mtsROSToCISST(rosData.twist, cisstData, node);
 }
-
 
 void mtsROSToCISST(const sensor_msgs::msg::JointState & rosData, prmPositionJointSet & cisstData,
                    std::shared_ptr<rclcpp::Node> node)
@@ -307,6 +368,18 @@ void mtsROSToCISST(const sensor_msgs::msg::Joy & rosData, prmEventButton & cisst
     } else {
         cisstData.Type() = prmEventButton::UNDEFINED;
     }
+}
+
+void mtsROSToCISST(const sensor_msgs::msg::Joy & rosData, prmInputData & cisstData,
+                   std::shared_ptr<rclcpp::Node> node)
+{
+    mtsROSToCISSTHeader(rosData, cisstData, node);
+    cisstData.AnalogInputs().SetSize(rosData.axes.size());
+    cisstData.DigitalInputs().SetSize(rosData.buttons.size());
+    std::copy(rosData.axes.begin(), rosData.axes.end(),
+              cisstData.AnalogInputs().begin());
+    std::copy(rosData.buttons.begin(), rosData.buttons.end(),
+              cisstData.DigitalInputs().begin());
 }
 
 void mtsROSToCISST(const diagnostic_msgs::msg::KeyValue & rosData, prmKeyValue & cisstData,

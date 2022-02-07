@@ -232,6 +232,16 @@ bool mtsCISSTToROS(const prmPositionCartesianSet & cisstData, geometry_msgs::msg
     return true;
 }
 
+bool mtsCISSTToROS(const prmPositionCartesianSet & cisstData, geometry_msgs::msg::PoseStamped & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo)
+{
+    if (mtsCISSTToROSHeader(cisstData, rosData, node, debugInfo)) {
+        mtsCISSTToROSPose(cisstData.Goal(), rosData.pose);
+        return true;
+    }
+    return false;
+}
+
 bool mtsCISSTToROS(const vctFrm4x4 & cisstData, geometry_msgs::msg::Pose & rosData,
                    std::shared_ptr<rclcpp::Node>, const std::string &)
 {
@@ -327,7 +337,7 @@ bool mtsCISSTToROS(const vctMatRot3 & cisstData, geometry_msgs::msg::QuaternionS
 }
 
 bool mtsCISSTToROS(const vct6 & cisstData, geometry_msgs::msg::Wrench & rosData,
-                   std::shared_ptr<rclcpp::Node>, const std::string & debugInfo)
+                   std::shared_ptr<rclcpp::Node>, const std::string &)
 {
     mtsCISSTToROSWrench(cisstData, rosData);
     return true;
@@ -521,6 +531,24 @@ bool mtsCISSTToROS(const prmVelocityJointGet & cisstData, sensor_msgs::msg::Join
             rosData.velocity.resize(size);
             std::copy(cisstData.Velocity().begin(), cisstData.Velocity().end(),
                       rosData.velocity.begin());
+        }
+        return true;
+    }
+    return false;
+}
+
+bool mtsCISSTToROS(const prmForceTorqueJointSet & cisstData, sensor_msgs::msg::JointState & rosData,
+                   std::shared_ptr<rclcpp::Node> node, const std::string & debugInfo)
+{
+    if (mtsCISSTToROSHeader(cisstData, rosData, node, debugInfo)) {
+        rosData.name.resize(0);
+        rosData.position.resize(0);
+        rosData.velocity.resize(0);
+        const size_t size = cisstData.ForceTorque().size();
+        if (size != 0) {
+            rosData.effort.resize(size);
+            std::copy(cisstData.ForceTorque().begin(), cisstData.ForceTorque().end(),
+                      rosData.effort.begin());
         }
         return true;
     }

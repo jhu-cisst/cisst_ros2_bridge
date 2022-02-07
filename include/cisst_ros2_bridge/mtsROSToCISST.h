@@ -33,11 +33,14 @@ http://www.cisst.org/cisst/license.txt.
 #include <cisstParameterTypes/prmPositionJointGet.h>
 #include <cisstParameterTypes/prmPositionJointSet.h>
 #include <cisstParameterTypes/prmForceTorqueJointSet.h>
+#include <cisstParameterTypes/prmForceCartesianGet.h>
 #include <cisstParameterTypes/prmForceCartesianSet.h>
 #include <cisstParameterTypes/prmCartesianImpedanceGains.h>
+#include <cisstParameterTypes/prmVelocityCartesianGet.h>
 #include <cisstParameterTypes/prmVelocityJointSet.h>
 #include <cisstParameterTypes/prmVelocityCartesianSet.h>
 #include <cisstParameterTypes/prmEventButton.h>
+#include <cisstParameterTypes/prmInputData.h>
 #include <cisstParameterTypes/prmKeyValue.h>
 #include <cisstParameterTypes/prmStateJoint.h>
 #include <cisstParameterTypes/prmOperatingState.h>
@@ -140,6 +143,8 @@ void mtsROSToCISST(const std_msgs::msg::String & rosData, mtsMessage & cisstData
                    std::shared_ptr<rclcpp::Node> node);
 void mtsROSToCISST(const std_msgs::msg::Float64MultiArray & rosData, vctDoubleVec & cisstData,
                    std::shared_ptr<rclcpp::Node> node);
+void mtsROSToCISST(const std_msgs::msg::Float64MultiArray & rosData, vctDoubleMat & cisstData,
+                   std::shared_ptr<rclcpp::Node> node);
 
 // geometry_msgs
 void mtsROSToCISST(const geometry_msgs::msg::Vector3 & rosData, vct3 & cisstData,
@@ -178,6 +183,10 @@ void mtsROSToCISST(const geometry_msgs::msg::Transform & rosData, mtsFrm4x4 & ci
                    std::shared_ptr<rclcpp::Node> node);
 void mtsROSToCISST(const geometry_msgs::msg::TransformStamped & rosData, mtsFrm4x4 & cisstData,
                    std::shared_ptr<rclcpp::Node> node);
+void mtsROSToCISST(const geometry_msgs::msg::Wrench & rosData, prmForceCartesianGet & cisstData,
+                   std::shared_ptr<rclcpp::Node> node);
+void mtsROSToCISST(const geometry_msgs::msg::WrenchStamped & rosData, prmForceCartesianGet & cisstData,
+                   std::shared_ptr<rclcpp::Node> node);
 void mtsROSToCISST(const geometry_msgs::msg::Wrench & rosData, prmForceCartesianSet & cisstData,
                    std::shared_ptr<rclcpp::Node> node);
 void mtsROSToCISST(const geometry_msgs::msg::WrenchStamped & rosData, prmForceCartesianSet & cisstData,
@@ -185,6 +194,10 @@ void mtsROSToCISST(const geometry_msgs::msg::WrenchStamped & rosData, prmForceCa
 void mtsROSToCISST(const geometry_msgs::msg::Wrench & rosData, mtsDoubleVec & cisstData,
                    std::shared_ptr<rclcpp::Node> node);
 void mtsROSToCISST(const geometry_msgs::msg::WrenchStamped & rosData, mtsDoubleVec & cisstData,
+                   std::shared_ptr<rclcpp::Node> node);
+void mtsROSToCISST(const geometry_msgs::msg::Twist & rosData, prmVelocityCartesianGet & cisstData,
+                   std::shared_ptr<rclcpp::Node> node);
+void mtsROSToCISST(const geometry_msgs::msg::TwistStamped & rosData, prmVelocityCartesianGet & cisstData,
                    std::shared_ptr<rclcpp::Node> node);
 void mtsROSToCISST(const geometry_msgs::msg::Twist & rosData, prmVelocityCartesianSet & cisstData,
                    std::shared_ptr<rclcpp::Node> node);
@@ -201,6 +214,8 @@ void mtsROSToCISST(const sensor_msgs::msg::JointState & rosData, prmVelocityJoin
 void mtsROSToCISST(const sensor_msgs::msg::JointState & rosData, prmStateJoint & cisstData,
                    std::shared_ptr<rclcpp::Node> node);
 void mtsROSToCISST(const sensor_msgs::msg::Joy & rosData, prmEventButton & cisstData,
+                   std::shared_ptr<rclcpp::Node> node);
+void mtsROSToCISST(const sensor_msgs::msg::Joy & rosData, prmInputData & cisstData,
                    std::shared_ptr<rclcpp::Node> node);
 
 // diagnostic_msgs
