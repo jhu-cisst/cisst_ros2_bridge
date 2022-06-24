@@ -4,6 +4,7 @@ project(cisst_ros2_bridge VERSION 2.0.0)
 find_package (ament_cmake REQUIRED)
 find_package (rclcpp REQUIRED)
 find_package (std_msgs REQUIRED)
+find_package (std_srvs REQUIRED)
 find_package (geometry_msgs REQUIRED)
 find_package (sensor_msgs REQUIRED)
 find_package (diagnostic_msgs REQUIRED)
@@ -40,7 +41,7 @@ set (SOURCE_FILES
 add_library (cisst_ros2_bridge ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries (cisst_ros2_bridge ${catkin_LIBRARIES})
 cisst_target_link_libraries (cisst_ros2_bridge ${REQUIRED_CISST_LIBRARIES})
-ament_target_dependencies (cisst_ros2_bridge rclcpp std_msgs geometry_msgs sensor_msgs diagnostic_msgs cisst_msgs tf2_ros)
+ament_target_dependencies (cisst_ros2_bridge rclcpp std_msgs std_srvs geometry_msgs sensor_msgs diagnostic_msgs cisst_msgs tf2_ros)
 
 ## Declare a cpp executable
 add_executable (example_bridge example/main.cpp)
