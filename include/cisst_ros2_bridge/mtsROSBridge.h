@@ -84,10 +84,10 @@ public:
     }
 
     bool Execute(void) {
-        // xxx
-        //if ((mPublisher.getNumSubscribers() == 0) && !mPublisher.isLatched()) {
-        //    return true;
-        //}
+        // xxx How to latch?  qos?
+        if (mPublisher->get_subscription_count() == 0) {
+            return true;
+        }
         mtsExecutionResult result = Function(mCISSTData);
         if (result) {
             if (mtsCISSTToROS(mCISSTData, mROSData, mNode, mName)) {
@@ -163,9 +163,10 @@ public:
     }
 
     void EventHandler(const _mtsType & CISSTData) {
-        // xxx if ((mPublisher.getNumSubscribers() == 0) && !mPublisher.isLatched()) {
-        //     return;
-        // }
+        // xxx How to latch?  qos?
+        if (mPublisher->get_subscription_count() == 0) {
+            return;
+        }
         if (mtsCISSTToROS(CISSTData, mROSData, mNode, mName)) {
             mPublisher->publish(mROSData);
         }
@@ -403,9 +404,10 @@ public:
     }
 
     void Command(const _mtsType & CISSTData) {
-        // xxx if ((mPublisher.getNumSubscribers() == 0) && !mPublisher.isLatched()) {
-        //    return;
-        // }
+        // xxx How to latch?  qos?
+        if (mPublisher->get_subscription_count() == 0) {
+            return;
+        }
         if (mtsCISSTToROS(CISSTData, mROSData, mNode, mName)) {
             mPublisher->publish(mROSData);
         }
