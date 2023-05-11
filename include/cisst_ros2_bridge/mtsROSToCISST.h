@@ -65,7 +65,7 @@ http://www.cisst.org/cisst/license.txt.
 #include <cisst_msgs/msg/double_vec.hpp>
 #include <cisst_msgs/msg/interval_statistics.hpp>
 #include <cisst_msgs/msg/cartesian_impedance_gains.hpp>
-#include <cisst_msgs/srv/query_forward_kinematics.hpp>
+#include <cisst_msgs/srv/convert_float64_array.hpp>
 
 namespace mts_ros_to_cisst {
 
@@ -275,6 +275,6 @@ void mtsROSToCISST(const cisst_msgs::msg::DoubleVec & rosData, prmPositionJointS
 void mtsROSToCISST(const cisst_msgs::msg::DoubleVec & rosData, vctDoubleVec & cisstData);
 void mtsROSToCISST(const cisst_msgs::msg::CartesianImpedanceGains & rosData, prmCartesianImpedanceGains & cisstData);
 void mtsROSToCISST(const cisst_msgs::msg::IntervalStatistics & rosData, mtsIntervalStatistics & cisstData);
-void mtsROSToCISST(const cisst_msgs::srv::QueryForwardKinematics::Request & rosData, vctDoubleVec & cisstData);
+void mtsROSToCISST(const cisst_msgs::srv::ConvertFloat64Array::Request & rosData, vctDoubleVec & cisstData);
 
 #endif // _mtsROSToCISST_h

@@ -70,7 +70,7 @@ http://www.cisst.org/cisst/license.txt.
 #include <cisst_msgs/msg/cartesian_impedance_gains.hpp>
 #include <cisst_msgs/msg/interval_statistics.hpp>
 #include <cisst_msgs/msg/bool_stamped.hpp>
-#include <cisst_msgs/srv/query_forward_kinematics.hpp>
+#include <cisst_msgs/srv/convert_float64_array.hpp>
 
 namespace mts_cisst_to_ros {
 
@@ -380,7 +380,7 @@ void mtsCISSTToROS(const prmCartesianImpedanceGains & cisstData, cisst_msgs::msg
                    const std::string & debugInfo);
 void mtsCISSTToROS(const mtsIntervalStatistics & cisstData, cisst_msgs::msg::IntervalStatistics & rosData,
                    const std::string & debugInfo);
-void mtsCISSTToROS(const vctFrm4x4 & cisstData, cisst_msgs::srv::QueryForwardKinematics::Response & rosData,
+void mtsCISSTToROS(const vctDoubleVec & cisstData, cisst_msgs::srv::ConvertFloat64Array::Response & rosData,
                    const std::string & debugInfo);
 
 #endif // _mtsCISSTToROS_h

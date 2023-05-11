@@ -401,10 +401,9 @@ void mtsROSToCISST(const cisst_msgs::msg::IntervalStatistics & rosData, mtsInter
                               rosData.statistics_interval);
 }
 
-void mtsROSToCISST(const cisst_msgs::srv::QueryForwardKinematics::Request & rosData,
-                   vctDoubleVec & cisstData)
+void mtsROSToCISST(const cisst_msgs::srv::ConvertFloat64Array::Request & rosData, vctDoubleVec & cisstData)
 {
-    cisstData.SetSize(rosData.jp.position.size());
-    std::copy(rosData.jp.position.begin(), rosData.jp.position.end(),
+    cisstData.SetSize(rosData.input.size());
+    std::copy(rosData.input.begin(), rosData.input.end(),
               cisstData.begin());
 }

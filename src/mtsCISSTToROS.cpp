@@ -631,8 +631,14 @@ void mtsCISSTToROS(const mtsIntervalStatistics & cisstData, cisst_msgs::msg::Int
     rosData.statistics_interval = cisstData.StatisticsInterval();
 }
 
-void mtsCISSTToROS(const vctFrm4x4 & cisstData, cisst_msgs::srv::QueryForwardKinematics::Response & rosData,
+void mtsCISSTToROS(const vctDoubleVec & cisstData,
+                   cisst_msgs::srv::ConvertFloat64Array::Response & rosData,
                    const std::string &)
 {
-    mtsCISSTToROSPose(cisstData, rosData.cp.pose);
+    const size_t size = cisstData.size();
+    if (size != 0) {
+        rosData.output.resize(size);
+        std::copy(cisstData.begin(), cisstData.end(),
+                  rosData.output.begin());
+    }
 }
