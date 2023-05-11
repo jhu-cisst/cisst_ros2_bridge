@@ -5,7 +5,7 @@
   Author(s):  Anton Deguet, Zihan Chen, Adnan Munawar
   Created on: 2013-05-21
 
-  (C) Copyright 2013-2022 Johns Hopkins University (JHU), All Rights Reserved.
+  (C) Copyright 2013-2023 Johns Hopkins University (JHU), All Rights Reserved.
 
 --- begin cisst license - do not edit ---
 
@@ -90,7 +90,8 @@ public:
         }
         mtsExecutionResult result = Function(mCISSTData);
         if (result) {
-            if (mtsCISSTToROS(mCISSTData, mROSData, mNode, mName)) {
+            if (mts_cisst_to_ros::header(mCISSTData, mROSData, mNode, mName)) {
+                mtsCISSTToROS(mCISSTData, mROSData, mName);
                 mPublisher->publish(mROSData);
                 return true;
             }
@@ -167,7 +168,8 @@ public:
         if (mPublisher->get_subscription_count() == 0) {
             return;
         }
-        if (mtsCISSTToROS(CISSTData, mROSData, mNode, mName)) {
+        if (mts_cisst_to_ros::header(CISSTData, mROSData, mNode, mName)) {
+            mtsCISSTToROS(CISSTData, mROSData, mName);
             mPublisher->publish(mROSData);
         }
     }
@@ -197,7 +199,8 @@ public:
             if (mCISSTData.Timestamp() > mLastTimestamp) {
                 mLastTimestamp = mCISSTData.Timestamp();
                 // then convert and check if the data is valid
-                if (mtsCISSTToROS(mCISSTData, mROSData, mNode, mName)) {
+                if (mts_cisst_to_ros::header(mCISSTData, mROSData, mNode, mName)) {
+                    mtsCISSTToROS(mCISSTData, mROSData, mName);
                     mBroadcaster.sendTransform(mROSData);
                     return true;
                 }
@@ -292,7 +295,8 @@ public:
     }
 
     void Callback(const std::shared_ptr<_rosType> rosData) {
-        mtsROSToCISST(*rosData, mCISSTData, mNode);
+        mts_ros_to_cisst::header(rosData, mCISSTData, mNode);
+        mtsROSToCISST(*rosData, mCISSTData);
         mtsExecutionResult result = Function(mCISSTData);
         if (!result) {
             RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
@@ -354,10 +358,10 @@ public:
     mtsROSSubscriberStateTable(const std::string & name,
                                std::shared_ptr<rclcpp::Node> node,
                                const size_t & tableSize):
-        StateTable(tableSize, name),
+        mStateTable(tableSize, name),
         mNode(node)
     {
-        StateTable.AddData(CISSTData, name);
+        mStateTable.AddData(mCISSTData, name);
         mSubscriber =
             node->create_subscription<_rosType>(name,
                                                 1, std::bind(&ThisType::Callback,
@@ -369,13 +373,14 @@ public:
     }
 
     void Callback(const std::shared_ptr<_rosType> rosData) {
-        StateTable.Start();
-        mtsROSToCISST(*rosData, CISSTData, mNode);
-        StateTable.Advance();
+        mStateTable.Start();
+        mts_ros_to_cisst::header(*rosData, mCISSTData, mNode);
+        mtsROSToCISST(*rosData, mCISSTData);
+        mStateTable.Advance();
     }
 
-    mtsStateTable StateTable;
-    _mtsType CISSTData;
+    mtsStateTable mStateTable;
+    _mtsType mCISSTData;
 
 protected:
     typedef rclcpp::Subscription<_rosType> SubscriberType;
@@ -408,7 +413,8 @@ public:
         if (mPublisher->get_subscription_count() == 0) {
             return;
         }
-        if (mtsCISSTToROS(CISSTData, mROSData, mNode, mName)) {
+        if (mts_cisst_to_ros::header(CISSTData, mROSData, mNode, mName)) {
+            mtsCISSTToROS(CISSTData, mROSData, mName);
             mPublisher->publish(mROSData);
         }
     }
@@ -480,7 +486,8 @@ public:
                   std::shared_ptr<typename _rosQueryType::Response> response) {
         mtsExecutionResult result = Function(mResponse);
         if (result) {
-            if (mtsCISSTToROS(mResponse, *response, mNode, mName)) {
+            if (mts_cisst_to_ros::header(mResponse, *response, mNode, mName)) {
+                mtsCISSTToROS(mResponse, *response, mName);
                 return true;
             }
         } else {
@@ -528,10 +535,12 @@ public:
 
     bool Callback(const std::shared_ptr<typename _rosQueryType::Request> request,
                   std::shared_ptr<typename _rosQueryType::Response> response) {
-        mtsROSToCISST(*request, mRequest, mNode);
+        mts_ros_to_cisst::header(*request, mRequest, mNode);
+        mtsROSToCISST(*request, mRequest);
         mtsExecutionResult result = Function(mRequest, mResponse);
         if (result) {
-            if (mtsCISSTToROS(mResponse, *response, mNode, mName)) {
+            if (mts_cisst_to_ros::header(mResponse, *response, mNode, mName)) {
+                mtsCISSTToROS(mResponse, *response, mName);
                 return true;
             }
         } else {
@@ -1030,8 +1039,8 @@ bool mtsROSBridge::AddSubscriberToCommandRead(const std::string & interfaceProvi
 
     mtsROSSubscriberStateTable<_mtsType, _rosType> * newSubscriber
         = new mtsROSSubscriberStateTable<_mtsType, _rosType>(topicName, mNodePointer, tableSize);
-    if (!interfaceProvided->AddCommandReadState(newSubscriber->StateTable,
-                                                newSubscriber->CISSTData,
+    if (!interfaceProvided->AddCommandReadState(newSubscriber->mStateTable,
+                                                newSubscriber->mCISSTData,
                                                 commandName)) {
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
                      "mtsROSBridge::AddSubscriberToCommandRead: failed to add command read to provided interface.");

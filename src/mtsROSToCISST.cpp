@@ -5,7 +5,7 @@
   Author(s):  Anton Deguet, Zihan Chen, Adnan Munawar
   Created on: 2013-05-21
 
-  (C) Copyright 2013-2022 Johns Hopkins University (JHU), All Rights Reserved.
+  (C) Copyright 2013-2023 Johns Hopkins University (JHU), All Rights Reserved.
 
 --- begin cisst license - do not edit ---
 
@@ -19,44 +19,37 @@ http://www.cisst.org/cisst/license.txt.
 
 #include <cisst_ros2_bridge/mtsROSToCISST.h>
 
-void mtsROSToCISST(const std_msgs::msg::Float32 & rosData, double & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const std_msgs::msg::Float32 & rosData, double & cisstData)
 {
     cisstData = rosData.data;
 }
 
-void mtsROSToCISST(const std_msgs::msg::Float64 & rosData, double & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const std_msgs::msg::Float64 & rosData, double & cisstData)
 {
     cisstData = rosData.data;
 }
 
-void mtsROSToCISST(const std_msgs::msg::Int32 & rosData, int & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const std_msgs::msg::Int32 & rosData, int & cisstData)
 {
     cisstData = rosData.data;
 }
 
-void mtsROSToCISST(const std_msgs::msg::Bool & rosData, bool & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const std_msgs::msg::Bool & rosData, bool & cisstData)
 {
     cisstData = rosData.data;
 }
 
-void mtsROSToCISST(const std_msgs::msg::String & rosData, std::string & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const std_msgs::msg::String & rosData, std::string & cisstData)
 {
     cisstData = rosData.data;
 }
 
-void mtsROSToCISST(const std_msgs::msg::String & rosData, mtsMessage & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const std_msgs::msg::String & rosData, mtsMessage & cisstData)
 {
     cisstData.Message = rosData.data;
 }
 
-void mtsROSToCISST(const std_msgs::msg::Float64MultiArray & rosData, vctDoubleVec & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const std_msgs::msg::Float64MultiArray & rosData, vctDoubleVec & cisstData)
 {
     const size_t size = rosData.data.size();
     if (size != 0) {
@@ -66,8 +59,7 @@ void mtsROSToCISST(const std_msgs::msg::Float64MultiArray & rosData, vctDoubleVe
     }
 }
 
-void mtsROSToCISST(const std_msgs::msg::Float64MultiArray & rosData, vctDoubleMat & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const std_msgs::msg::Float64MultiArray & rosData, vctDoubleMat & cisstData)
 {
     if (rosData.layout.dim.size() != 2) {
         cmnThrow("mtsROSToCISST(std::msgs::Float64MultiArray, vctDoubleMat): incoming array dimension is not 2");
@@ -96,16 +88,14 @@ void mtsROSToCISST(const std_msgs::msg::Float64MultiArray & rosData, vctDoubleMa
               cisstData.begin());
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::Vector3 & rosData, vct3 & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::Vector3 & rosData, vct3 & cisstData)
 {
     cisstData[0] = rosData.x;
     cisstData[1] = rosData.y;
     cisstData[2] = rosData.z;
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::Quaternion & rosData, vctMatRot3 & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::Quaternion & rosData, vctMatRot3 & cisstData)
 {
     vctQuatRot3 quat;
     quat.X() = rosData.x;
@@ -116,150 +106,114 @@ void mtsROSToCISST(const geometry_msgs::msg::Quaternion & rosData, vctMatRot3 & 
 }
 
 
-void mtsROSToCISST(const geometry_msgs::msg::Pose & rosData, prmPositionCartesianGet & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::Pose & rosData, prmPositionCartesianGet & cisstData)
 {
-    mtsROSToCISSTNoHeader(cisstData);
     mtsROSPoseToCISST(rosData, cisstData.Position());
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::Pose & rosData, prmPositionCartesianSet & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::Pose & rosData, prmPositionCartesianSet & cisstData)
 {
-    mtsROSToCISSTNoHeader(cisstData);
     mtsROSPoseToCISST(rosData, cisstData.Goal());
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::PoseStamped & rosData, prmPositionCartesianGet & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+void mtsROSToCISST(const geometry_msgs::msg::PoseStamped & rosData, prmPositionCartesianGet & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
-    mtsROSToCISST(rosData.pose, cisstData, node);
+    mtsROSToCISST(rosData.pose, cisstData);
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::PoseStamped & rosData, prmPositionCartesianSet & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+void mtsROSToCISST(const geometry_msgs::msg::PoseStamped & rosData, prmPositionCartesianSet & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
-    mtsROSToCISST(rosData.pose, cisstData, node);
+    mtsROSToCISST(rosData.pose, cisstData);
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::TransformStamped & rosData, prmPositionCartesianGet & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+void mtsROSToCISST(const geometry_msgs::msg::TransformStamped & rosData, prmPositionCartesianGet & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
-    mtsROSToCISST(rosData.transform, cisstData.Position(), node);
+    mtsROSToCISST(rosData.transform, cisstData.Position());
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::TransformStamped & rosData, prmPositionCartesianSet & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+void mtsROSToCISST(const geometry_msgs::msg::TransformStamped & rosData, prmPositionCartesianSet & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
-    mtsROSToCISST(rosData.transform, cisstData.Goal(), node);
+    mtsROSToCISST(rosData.transform, cisstData.Goal());
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::PoseStamped & rosData, vctFrm3 & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::PoseStamped & rosData, vctFrm3 & cisstData)
 {
     mtsROSPoseToCISST(rosData.pose, cisstData);
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::PoseStamped & rosData, vctFrm4x4 & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::PoseStamped & rosData, vctFrm4x4 & cisstData)
 {
     mtsROSPoseToCISST(rosData.pose, cisstData);
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::Pose & rosData, vctFrm3 & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::Pose & rosData, vctFrm3 & cisstData)
 {
     mtsROSPoseToCISST(rosData, cisstData);
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::Pose & rosData, vctFrm4x4 & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::Pose & rosData, vctFrm4x4 & cisstData)
 {
     mtsROSPoseToCISST(rosData, cisstData);
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::Pose & rosData, mtsFrm4x4 & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::Pose & rosData, mtsFrm4x4 & cisstData)
 {
-    mtsROSToCISSTNoHeader(cisstData);
     mtsROSPoseToCISST(rosData, cisstData);
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::Transform & rosData, prmPositionCartesianGet & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::Transform & rosData, prmPositionCartesianGet & cisstData)
 {
-    mtsROSToCISSTNoHeader(cisstData);
     mtsROSTransformToCISST(rosData, cisstData.Position());
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::Transform & rosData, vctFrm3 & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::Transform & rosData, vctFrm3 & cisstData)
 {
     mtsROSTransformToCISST(rosData, cisstData);
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::Transform & rosData, vctFrm4x4 & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::Transform & rosData, vctFrm4x4 & cisstData)
 {
     mtsROSTransformToCISST(rosData, cisstData);
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::Transform & rosData, mtsFrm4x4 & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::Transform & rosData, mtsFrm4x4 & cisstData)
 {
-    mtsROSToCISSTNoHeader(cisstData);
     mtsROSTransformToCISST(rosData, cisstData);
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::TransformStamped & rosData, mtsFrm4x4 & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+void mtsROSToCISST(const geometry_msgs::msg::TransformStamped & rosData, mtsFrm4x4 & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
     mtsROSTransformToCISST(rosData.transform, cisstData);
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::Wrench & rosData, prmForceCartesianGet & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::Wrench & rosData, prmForceCartesianGet & cisstData)
 {
-    mtsROSToCISSTNoHeader(cisstData);
     vctFixedSizeVector<double, 6>
         vctFT(rosData.force.x, rosData.force.y, rosData.force.z,
               rosData.torque.x, rosData.torque.y, rosData.torque.z);
     cisstData.SetForce(vctFT);
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::WrenchStamped & rosData, prmForceCartesianGet & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+void mtsROSToCISST(const geometry_msgs::msg::WrenchStamped & rosData, prmForceCartesianGet & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
-    mtsROSToCISST(rosData.wrench, cisstData, node);
+    mtsROSToCISST(rosData.wrench, cisstData);
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::Wrench & rosData, prmForceCartesianSet & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::Wrench & rosData, prmForceCartesianSet & cisstData)
 {
-    mtsROSToCISSTNoHeader(cisstData);
     vctFixedSizeVector<double, 6>
         vctFT(rosData.force.x, rosData.force.y, rosData.force.z,
               rosData.torque.x, rosData.torque.y, rosData.torque.z);
     cisstData.SetForce(vctFT);
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::WrenchStamped & rosData, prmForceCartesianSet & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+void mtsROSToCISST(const geometry_msgs::msg::WrenchStamped & rosData, prmForceCartesianSet & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
-    mtsROSToCISST(rosData.wrench, cisstData, node);
+    mtsROSToCISST(rosData.wrench, cisstData);
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::Wrench & rosData, mtsDoubleVec & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::Wrench & rosData, mtsDoubleVec & cisstData)
 {
-    mtsROSToCISSTNoHeader(cisstData);
     cisstData.SetSize(6);
     cisstData.Element(0) = rosData.force.x;
     cisstData.Element(1) = rosData.force.y;
@@ -269,74 +223,56 @@ void mtsROSToCISST(const geometry_msgs::msg::Wrench & rosData, mtsDoubleVec & ci
     cisstData.Element(5) = rosData.torque.z;
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::WrenchStamped & rosData, mtsDoubleVec & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+void mtsROSToCISST(const geometry_msgs::msg::WrenchStamped & rosData, mtsDoubleVec & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
-    mtsROSToCISST(rosData.wrench, cisstData, node);
+    mtsROSToCISST(rosData.wrench, cisstData);
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::Twist & rosData, prmVelocityCartesianGet & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::Twist & rosData, prmVelocityCartesianGet & cisstData)
 {
-    mtsROSToCISSTNoHeader(cisstData);
     cisstData.SetVelocityLinear(vct3(rosData.linear.x, rosData.linear.y, rosData.linear.z));
     cisstData.SetVelocityAngular(vct3(rosData.angular.x, rosData.angular.y, rosData.angular.z));
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::TwistStamped & rosData, prmVelocityCartesianGet & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+void mtsROSToCISST(const geometry_msgs::msg::TwistStamped & rosData, prmVelocityCartesianGet & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
-    mtsROSToCISST(rosData.twist, cisstData, node);
+    mtsROSToCISST(rosData.twist, cisstData);
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::Twist & rosData, prmVelocityCartesianSet & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const geometry_msgs::msg::Twist & rosData, prmVelocityCartesianSet & cisstData)
 {
-    mtsROSToCISSTNoHeader(cisstData);
     cisstData.SetVelocity(vct3(rosData.linear.x, rosData.linear.y, rosData.linear.z));
     cisstData.SetAngularVelocity(vct3(rosData.angular.x, rosData.angular.y, rosData.angular.z));
 }
 
-void mtsROSToCISST(const geometry_msgs::msg::TwistStamped & rosData, prmVelocityCartesianSet & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+void mtsROSToCISST(const geometry_msgs::msg::TwistStamped & rosData, prmVelocityCartesianSet & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
-    mtsROSToCISST(rosData.twist, cisstData, node);
+    mtsROSToCISST(rosData.twist, cisstData);
 }
 
-void mtsROSToCISST(const sensor_msgs::msg::JointState & rosData, prmPositionJointSet & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+void mtsROSToCISST(const sensor_msgs::msg::JointState & rosData, prmPositionJointSet & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
     cisstData.Goal().SetSize(rosData.position.size());
     std::copy(rosData.position.begin(), rosData.position.end(),
               cisstData.Goal().begin());
 }
 
-void mtsROSToCISST(const sensor_msgs::msg::JointState & rosData, prmForceTorqueJointSet & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+void mtsROSToCISST(const sensor_msgs::msg::JointState & rosData, prmForceTorqueJointSet & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
     cisstData.ForceTorque().SetSize(rosData.effort.size());
     std::copy(rosData.effort.begin(), rosData.effort.end(),
               cisstData.ForceTorque().begin());
 }
 
-void mtsROSToCISST(const sensor_msgs::msg::JointState & rosData, prmVelocityJointSet & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+void mtsROSToCISST(const sensor_msgs::msg::JointState & rosData, prmVelocityJointSet & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
     cisstData.Goal().SetSize(rosData.velocity.size());
     std::copy(rosData.velocity.begin(), rosData.velocity.end(),
               cisstData.Goal().begin());
 }
 
-void mtsROSToCISST(const sensor_msgs::msg::JointState & rosData, prmStateJoint & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+void mtsROSToCISST(const sensor_msgs::msg::JointState & rosData, prmStateJoint & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
     cisstData.Name().SetSize(rosData.name.size());
     std::copy(rosData.name.begin(), rosData.name.end(),
               cisstData.Name().begin());
@@ -351,10 +287,8 @@ void mtsROSToCISST(const sensor_msgs::msg::JointState & rosData, prmStateJoint &
               cisstData.Effort().begin());
 }
 
-void mtsROSToCISST(const sensor_msgs::msg::Joy & rosData, prmEventButton & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+void mtsROSToCISST(const sensor_msgs::msg::Joy & rosData, prmEventButton & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
     if (rosData.buttons.size() < 1) {
         cisstData.Type() = prmEventButton::UNDEFINED;
         return;
@@ -370,10 +304,8 @@ void mtsROSToCISST(const sensor_msgs::msg::Joy & rosData, prmEventButton & cisst
     }
 }
 
-void mtsROSToCISST(const sensor_msgs::msg::Joy & rosData, prmInputData & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+void mtsROSToCISST(const sensor_msgs::msg::Joy & rosData, prmInputData & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
     cisstData.AnalogInputs().SetSize(rosData.axes.size());
     cisstData.DigitalInputs().SetSize(rosData.buttons.size());
     std::copy(rosData.axes.begin(), rosData.axes.end(),
@@ -382,15 +314,13 @@ void mtsROSToCISST(const sensor_msgs::msg::Joy & rosData, prmInputData & cisstDa
               cisstData.DigitalInputs().begin());
 }
 
-void mtsROSToCISST(const diagnostic_msgs::msg::KeyValue & rosData, prmKeyValue & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const diagnostic_msgs::msg::KeyValue & rosData, prmKeyValue & cisstData)
 {
     cisstData.Key = rosData.key;
     cisstData.Value = rosData.value;
 }
 
-void mtsROSToCISST(const cisst_msgs::msg::DoubleVec & rosData, prmPositionJointSet & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const cisst_msgs::msg::DoubleVec & rosData, prmPositionJointSet & cisstData)
 {
     const size_t size = rosData.data.size();
     cisstData.Goal().resize(size);
@@ -399,8 +329,7 @@ void mtsROSToCISST(const cisst_msgs::msg::DoubleVec & rosData, prmPositionJointS
     }
 }
 
-void mtsROSToCISST(const cisst_msgs::msg::DoubleVec & rosData, vctDoubleVec & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+void mtsROSToCISST(const cisst_msgs::msg::DoubleVec & rosData, vctDoubleVec & cisstData)
 {
     const size_t size = rosData.data.size();
     cisstData.resize(size);
@@ -410,59 +339,55 @@ void mtsROSToCISST(const cisst_msgs::msg::DoubleVec & rosData, vctDoubleVec & ci
 }
 
 void mtsROSToCISST(const cisst_msgs::msg::CartesianImpedanceGains & rosData,
-                   prmCartesianImpedanceGains & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+                   prmCartesianImpedanceGains & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
     // vf pos/rot
     mtsROSToCISST(rosData.force_position,
-                  cisstData.ForcePosition(), node);
+                  cisstData.ForcePosition());
     mtsROSToCISST(rosData.force_orientation,
-                  cisstData.ForceOrientation(), node);
+                  cisstData.ForceOrientation());
     mtsROSToCISST(rosData.torque_orientation,
-                  cisstData.TorqueOrientation(), node);
+                  cisstData.TorqueOrientation());
 
     // force gains
     mtsROSToCISST(rosData.pos_deadband_pos,
-                  cisstData.PositionDeadbandPos(), node);
+                  cisstData.PositionDeadbandPos());
     mtsROSToCISST(rosData.pos_deadband_neg,
-                  cisstData.PositionDeadbandNeg(), node);
+                  cisstData.PositionDeadbandNeg());
     mtsROSToCISST(rosData.pos_stiff_pos,
-                  cisstData.PositionStiffnessPos(), node);
+                  cisstData.PositionStiffnessPos());
     mtsROSToCISST(rosData.pos_stiff_neg,
-                  cisstData.PositionStiffnessNeg(), node);
+                  cisstData.PositionStiffnessNeg());
     mtsROSToCISST(rosData.pos_damping_pos,
-                  cisstData.PositionDampingPos(), node);
+                  cisstData.PositionDampingPos());
     mtsROSToCISST(rosData.pos_damping_neg,
-                  cisstData.PositionDampingNeg(), node);
+                  cisstData.PositionDampingNeg());
     mtsROSToCISST(rosData.force_bias_pos,
-                  cisstData.ForceBiasPos(), node);
+                  cisstData.ForceBiasPos());
     mtsROSToCISST(rosData.force_bias_neg,
-                  cisstData.ForceBiasNeg(), node);
+                  cisstData.ForceBiasNeg());
 
     // torque gains
     mtsROSToCISST(rosData.ori_deadband_pos,
-                  cisstData.OrientationDeadbandPos(), node);
+                  cisstData.OrientationDeadbandPos());
     mtsROSToCISST(rosData.ori_deadband_neg,
-                  cisstData.OrientationDeadbandNeg(), node);
+                  cisstData.OrientationDeadbandNeg());
     mtsROSToCISST(rosData.ori_stiff_pos,
-                  cisstData.OrientationStiffnessPos(), node);
+                  cisstData.OrientationStiffnessPos());
     mtsROSToCISST(rosData.ori_stiff_neg,
-                  cisstData.OrientationStiffnessNeg(), node);
+                  cisstData.OrientationStiffnessNeg());
     mtsROSToCISST(rosData.ori_damping_pos,
-                  cisstData.OrientationDampingPos(), node);
+                  cisstData.OrientationDampingPos());
     mtsROSToCISST(rosData.ori_damping_neg,
-                  cisstData.OrientationDampingNeg(), node);
+                  cisstData.OrientationDampingNeg());
     mtsROSToCISST(rosData.torque_bias_pos,
-                  cisstData.TorqueBiasPos(), node);
+                  cisstData.TorqueBiasPos());
     mtsROSToCISST(rosData.torque_bias_neg,
-                  cisstData.TorqueBiasNeg(), node);
+                  cisstData.TorqueBiasNeg());
 }
 
-void mtsROSToCISST(const cisst_msgs::msg::IntervalStatistics & rosData, mtsIntervalStatistics & cisstData,
-                   std::shared_ptr<rclcpp::Node> node)
+void mtsROSToCISST(const cisst_msgs::msg::IntervalStatistics & rosData, mtsIntervalStatistics & cisstData)
 {
-    mtsROSToCISSTHeader(rosData, cisstData, node);
     cisstData.SetFromExisting(rosData.period_avg,
                               rosData.period_std_dev,
                               rosData.period_min,
@@ -477,8 +402,7 @@ void mtsROSToCISST(const cisst_msgs::msg::IntervalStatistics & rosData, mtsInter
 }
 
 void mtsROSToCISST(const cisst_msgs::srv::QueryForwardKinematics::Request & rosData,
-                   vctDoubleVec & cisstData,
-                   std::shared_ptr<rclcpp::Node>)
+                   vctDoubleVec & cisstData)
 {
     cisstData.SetSize(rosData.jp.position.size());
     std::copy(rosData.jp.position.begin(), rosData.jp.position.end(),
