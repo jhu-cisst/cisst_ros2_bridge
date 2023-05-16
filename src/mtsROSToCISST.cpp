@@ -255,6 +255,12 @@ void mtsROSToCISST(const sensor_msgs::msg::JointState & rosData, prmPositionJoin
     cisstData.Goal().SetSize(rosData.position.size());
     std::copy(rosData.position.begin(), rosData.position.end(),
               cisstData.Goal().begin());
+    const auto velocitySize = rosData.velocity.size();
+    if (velocitySize > 0) {
+        cisstData.Velocity().SetSize(velocitySize);
+        std::copy(rosData.velocity.begin(), rosData.velocity.end(),
+                  cisstData.Velocity().begin());
+    }
 }
 
 void mtsROSToCISST(const sensor_msgs::msg::JointState & rosData, prmForceTorqueJointSet & cisstData)
