@@ -39,7 +39,6 @@ http://www.cisst.org/cisst/license.txt.
 #include <cisstParameterTypes/prmForceCartesianGet.h>
 #include <cisstParameterTypes/prmForceCartesianSet.h>
 #include <cisstParameterTypes/prmEventButton.h>
-#include <cisstParameterTypes/prmCartesianImpedanceGains.h>
 #include <cisstParameterTypes/prmInputData.h>
 #include <cisstParameterTypes/prmKeyValue.h>
 #include <cisstParameterTypes/prmOperatingState.h>
@@ -375,8 +374,6 @@ void mtsCISSTToROS(const std::string & cisstData, std_srvs::srv::Trigger::Respon
 void mtsCISSTToROS(const prmPositionJointGet & cisstData, cisst_msgs::msg::DoubleVec & rosData,
                    const std::string & debugInfo);
 void mtsCISSTToROS(const vctDoubleVec & cisstData, cisst_msgs::msg::DoubleVec & rosData,
-                   const std::string & debugInfo);
-void mtsCISSTToROS(const prmCartesianImpedanceGains & cisstData, cisst_msgs::msg::CartesianImpedanceGains & rosData,
                    const std::string & debugInfo);
 void mtsCISSTToROS(const mtsIntervalStatistics & cisstData, cisst_msgs::msg::IntervalStatistics & rosData,
                    const std::string & debugInfo);

@@ -35,7 +35,6 @@ http://www.cisst.org/cisst/license.txt.
 #include <cisstParameterTypes/prmForceTorqueJointSet.h>
 #include <cisstParameterTypes/prmForceCartesianGet.h>
 #include <cisstParameterTypes/prmForceCartesianSet.h>
-#include <cisstParameterTypes/prmCartesianImpedanceGains.h>
 #include <cisstParameterTypes/prmVelocityCartesianGet.h>
 #include <cisstParameterTypes/prmVelocityJointSet.h>
 #include <cisstParameterTypes/prmVelocityCartesianSet.h>
@@ -273,7 +272,6 @@ void mtsROSToCISST(const diagnostic_msgs::msg::KeyValue & rosData, prmKeyValue &
 // cisst_msgs
 void mtsROSToCISST(const cisst_msgs::msg::DoubleVec & rosData, prmPositionJointSet & cisstData);
 void mtsROSToCISST(const cisst_msgs::msg::DoubleVec & rosData, vctDoubleVec & cisstData);
-void mtsROSToCISST(const cisst_msgs::msg::CartesianImpedanceGains & rosData, prmCartesianImpedanceGains & cisstData);
 void mtsROSToCISST(const cisst_msgs::msg::IntervalStatistics & rosData, mtsIntervalStatistics & cisstData);
 void mtsROSToCISST(const cisst_msgs::srv::ConvertFloat64Array::Request & rosData, vctDoubleVec & cisstData);
 

@@ -567,54 +567,6 @@ void mtsCISSTToROS(const vctDoubleVec & cisstData, cisst_msgs::msg::DoubleVec & 
     }
 }
 
-void mtsCISSTToROS(const prmCartesianImpedanceGains & cisstData, cisst_msgs::msg::CartesianImpedanceGains & rosData,
-                   const std::string & debugInfo)
-{
-    // vf pos/rot
-    mtsCISSTToROS(cisstData.ForcePosition(),
-                  rosData.force_position, debugInfo);
-    mtsCISSTToROS(cisstData.ForceOrientation(),
-                  rosData.force_orientation, debugInfo);
-    mtsCISSTToROS(cisstData.TorqueOrientation(),
-                  rosData.torque_orientation, debugInfo);
-
-    // force gains
-    mtsCISSTToROS(cisstData.PositionDeadbandPos(),
-                  rosData.pos_deadband_pos, debugInfo);
-    mtsCISSTToROS(cisstData.PositionDeadbandNeg(),
-                  rosData.pos_deadband_neg, debugInfo);
-    mtsCISSTToROS(cisstData.PositionStiffnessPos(),
-                  rosData.pos_stiff_pos, debugInfo);
-    mtsCISSTToROS(cisstData.PositionStiffnessNeg(),
-                  rosData.pos_stiff_neg, debugInfo);
-    mtsCISSTToROS(cisstData.PositionDampingPos(),
-                  rosData.pos_damping_pos, debugInfo);
-    mtsCISSTToROS(cisstData.PositionDampingNeg(),
-                  rosData.pos_damping_neg, debugInfo);
-    mtsCISSTToROS(cisstData.ForceBiasPos(),
-                  rosData.force_bias_pos, debugInfo);
-    mtsCISSTToROS(cisstData.ForceBiasNeg(),
-                  rosData.force_bias_neg, debugInfo);
-
-    // torque gains
-    mtsCISSTToROS(cisstData.OrientationDeadbandPos(),
-                  rosData.ori_deadband_pos, debugInfo);
-    mtsCISSTToROS(cisstData.OrientationDeadbandNeg(),
-                  rosData.ori_deadband_neg, debugInfo);
-    mtsCISSTToROS(cisstData.OrientationStiffnessPos(),
-                  rosData.ori_stiff_pos, debugInfo);
-    mtsCISSTToROS(cisstData.OrientationStiffnessNeg(),
-                  rosData.ori_stiff_neg, debugInfo);
-    mtsCISSTToROS(cisstData.OrientationDampingPos(),
-                  rosData.ori_damping_pos, debugInfo);
-    mtsCISSTToROS(cisstData.OrientationDampingNeg(),
-                  rosData.ori_damping_neg, debugInfo);
-    mtsCISSTToROS(cisstData.TorqueBiasPos(),
-                  rosData.torque_bias_pos, debugInfo);
-    mtsCISSTToROS(cisstData.TorqueBiasNeg(),
-                  rosData.torque_bias_neg, debugInfo);
-}
-
 void mtsCISSTToROS(const mtsIntervalStatistics & cisstData, cisst_msgs::msg::IntervalStatistics & rosData,
                    const std::string &)
 {
