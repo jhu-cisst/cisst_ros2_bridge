@@ -63,7 +63,6 @@ http://www.cisst.org/cisst/license.txt.
 // non standard messages
 #include <cisst_msgs/msg/double_vec.hpp>
 #include <cisst_msgs/msg/interval_statistics.hpp>
-#include <cisst_msgs/msg/cartesian_impedance_gains.hpp>
 #include <cisst_msgs/srv/convert_float64_array.hpp>
 
 namespace mts_ros_to_cisst {
