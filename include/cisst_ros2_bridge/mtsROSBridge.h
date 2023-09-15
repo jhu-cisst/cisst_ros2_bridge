@@ -51,9 +51,11 @@ public:
     mtsFunctionRead Function;
 
     mtsROSPublisherBase(const std::string & name,
-                        std::shared_ptr<rclcpp::Node> node):
+                        std::shared_ptr<rclcpp::Node> node,
+                        const bool latch):
         mName(name),
-        mNode(node)
+        mNode(node),
+        mLatched(latch)
     {}
 
     virtual ~mtsROSPublisherBase() {};
@@ -63,6 +65,7 @@ public:
 protected:
     std::string mName;
     std::shared_ptr<rclcpp::Node> mNode;
+    bool mLatched;
 };
 
 template <typename _mtsType, typename _rosType>
@@ -73,19 +76,21 @@ public:
                     std::shared_ptr<rclcpp::Node> node,
                     const uint32_t queueSize = 5,
                     const bool latch = false):
-        mtsROSPublisherBase(name, node)
+        mtsROSPublisherBase(name, node, latch)
     {
+        rclcpp::QoS qos(queueSize);
+        if (mLatched) {
+            qos.transient_local();
+        }
         mPublisher =
-            node->create_publisher<_rosType>(name,
-                                             queueSize); // xxx , latch);
+            node->create_publisher<_rosType>(name, qos);
     }
     virtual ~mtsROSPublisher() {
         // xxx mPublisher.shutdown();
     }
 
     bool Execute(void) {
-        // xxx How to latch?  qos?
-        if (mPublisher->get_subscription_count() == 0) {
+        if ((mPublisher->get_subscription_count() == 0) && !mLatched ) {
             return true;
         }
         mtsExecutionResult result = Function(mCISSTData);
@@ -118,11 +123,14 @@ public:
                              std::shared_ptr<rclcpp::Node> node,
                              const uint32_t queueSize = 100,
                              const bool latch = true):
-        mtsROSPublisherBase(name, node)
+        mtsROSPublisherBase(name, node, latch)
     {
+        rclcpp::QoS qos(queueSize);
+        if (mLatched) {
+            qos.transient_local();
+        }
         mPublisher =
-            node->create_publisher<std_msgs::msg::Empty>(name,
-                                                         queueSize); // xxx , latch);
+            node->create_publisher<std_msgs::msg::Empty>(name, qos);
     }
     virtual ~mtsROSEventVoidPublisher() {
         /// xxx mPublisher.shutdown();
@@ -132,6 +140,9 @@ public:
     }
 
     void EventHandler(void) {
+        if ((mPublisher->get_subscription_count() == 0) && !mLatched ) {
+            return;
+        }
         mPublisher->publish(mEmptyMsg);
     }
 private:
@@ -149,11 +160,14 @@ public:
                               std::shared_ptr<rclcpp::Node> node,
                               const uint32_t queueSize = 100,
                               const bool latch = true):
-        mtsROSPublisherBase(name, node)
+        mtsROSPublisherBase(name, node, latch)
     {
+        rclcpp::QoS qos(queueSize);
+        if (mLatched) {
+            qos.transient_local();
+        }
         mPublisher =
-            node->create_publisher<_rosType>(name,
-                                             queueSize); // xxx , latch);
+            node->create_publisher<_rosType>(name, qos);
     }
     virtual ~mtsROSEventWritePublisher() {
         // xxx mPublisher.shutdown();
@@ -164,8 +178,7 @@ public:
     }
 
     void EventHandler(const _mtsType & CISSTData) {
-        // xxx How to latch?  qos?
-        if (mPublisher->get_subscription_count() == 0) {
+        if ((mPublisher->get_subscription_count() == 0) && !mLatched ) {
             return;
         }
         if (mts_cisst_to_ros::header(CISSTData, mROSData, mNode, mName)) {
@@ -186,7 +199,7 @@ class mtsROStf2Broadcaster: public mtsROSPublisherBase
 public:
     mtsROStf2Broadcaster(const std::string name,
                          std::shared_ptr<rclcpp::Node> node):
-        mtsROSPublisherBase(name, node),
+        mtsROSPublisherBase(name, node, false /* not latched */),
         mBroadcaster(node)
     {}
     virtual ~mtsROStf2Broadcaster() {
@@ -230,7 +243,7 @@ public:
 
     mtsROSEventWriteLog(const LogLevel level,
                         std::shared_ptr<rclcpp::Node> node):
-        mtsROSPublisherBase("log", node),
+        mtsROSPublisherBase("log", node, false /* not latched */),
         mLevel(level)
     {}
     virtual ~mtsROSEventWriteLog() {}
@@ -396,21 +409,24 @@ public:
     mtsROSCommandWritePublisher(const std::string & name,
                                 std::shared_ptr<rclcpp::Node> node,
                                 const uint32_t queueSize = 100,
-                                const bool latch = false)
+                                const bool latch = false):
+        mName(name),
+        mNode(node),
+        mLatched(latch)
     {
-        mName = name;
-        mNode = node;
+        rclcpp::QoS qos(queueSize);
+        if (mLatched) {
+            qos.transient_local();
+        }
         mPublisher =
-            node->create_publisher<_rosType>(name,
-                                             queueSize); // xxx , latch);
+            node->create_publisher<_rosType>(name, qos);
     }
     virtual ~mtsROSCommandWritePublisher() {
         // xxx mPublisher.shutdown();
     }
 
     void Command(const _mtsType & CISSTData) {
-        // xxx How to latch?  qos?
-        if (mPublisher->get_subscription_count() == 0) {
+        if ((mPublisher->get_subscription_count() == 0) && !mLatched ) {
             return;
         }
         if (mts_cisst_to_ros::header(CISSTData, mROSData, mNode, mName)) {
@@ -424,6 +440,7 @@ protected:
     typename PublisherType::SharedPtr mPublisher;
     std::string mName;
     std::shared_ptr<rclcpp::Node> mNode;
+    bool mLatched;
     _rosType mROSData;
 };
 
@@ -434,11 +451,15 @@ public:
     mtsROSCommandVoidPublisher(const std::string & name,
                                std::shared_ptr<rclcpp::Node> node,
                                const uint32_t queueSize = 100,
-                               const bool latch = false)
+                               const bool latch = false):
+        mLatched(latch)
     {
+        rclcpp::QoS qos(queueSize);
+        if (mLatched) {
+            qos.transient_local();
+        }
         mPublisher =
-            node->create_publisher<std_msgs::msg::Empty>(name,
-                                                         queueSize); // xxx , latch);
+            node->create_publisher<std_msgs::msg::Empty>(name, qos);
     }
     virtual ~mtsROSCommandVoidPublisher() {
         // xxx mPublisher.shutdown();
@@ -446,11 +467,15 @@ public:
 
     void Command(void)
     {
+        if ((mPublisher->get_subscription_count() == 0) && !mLatched ) {
+            return;
+        }
         mPublisher->publish(mEmptyMsg);
     }
 
 protected:
     typedef rclcpp::Publisher<std_msgs::msg::Empty> PublisherType;
+    bool mLatched;
     typename PublisherType::SharedPtr mPublisher;
     std_msgs::msg::Empty mEmptyMsg;
 };
