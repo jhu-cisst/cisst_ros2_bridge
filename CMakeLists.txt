@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(cisst_ros2_bridge VERSION 2.0.0)
+project(cisst_ros2_bridge VERSION 1.0.0)
 
 find_package (ament_cmake REQUIRED)
 find_package (rclcpp REQUIRED)
