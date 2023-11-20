@@ -21,7 +21,7 @@ set (REQUIRED_CISST_LIBRARIES
   )
 
 # find cisst and make sure the required libraries have been compiled
-find_package (cisst 1.1.0 REQUIRED ${REQUIRED_CISST_LIBRARIES})
+find_package (cisst 1.2.0 REQUIRED ${REQUIRED_CISST_LIBRARIES})
 include (${CISST_USE_FILE})
 
 include_directories (include)
