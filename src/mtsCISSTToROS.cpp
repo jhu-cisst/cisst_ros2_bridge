@@ -377,7 +377,11 @@ void mtsCISSTToROS(const vctDoubleVec & cisstData, sensor_msgs::msg::JointState 
     rosData.velocity.resize(0);
     rosData.effort.resize(0);
     const size_t size = cisstData.size();
+    rosData.name.resize(size);
     if (size != 0) {
+        for (size_t i = 0; i < size; ++i) {
+            rosData.name[i] = "j" + std::to_string(i);
+        }
         rosData.position.resize(size);
         std::copy(cisstData.begin(), cisstData.end(),
                   rosData.position.begin());
